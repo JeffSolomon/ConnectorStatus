@@ -1,0 +1,63 @@
+﻿@model List<ConnectorStatus.Models.ConnectorBuildItem>
+@{
+    ViewBag.Title = "ConnectorStatusView";
+    string filterLabel = (ViewBag.Toggle ? "Hide" : "Show") + " Completed Connectors";
+}
+
+<script type="text/javascript" language="javascript">
+    function myFunction(elmnt) {
+        if(elmnt.style.style == "white-space:pre-wrap")
+            elmnt.style.style == "white-space:nowrap"
+        else elmnt.style.style = "white-space:pre-wrap"
+    }
+</script>
+
+
+<h2>Connector Status Tracker</h2>
+
+@Html.ActionLink(@filterLabel, "Index", new { filterCompleted = ViewBag.Toggle }, new { @class = "btn btn-primary", @style = "color:white" })
+
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Source</th>
+                <th>Key</th>
+                @foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
+                {
+                    <th class="rotate-45"><div><span>@ViewBag.StageLabels[stage]</span></div></th>
+                }
+                
+            </tr>
+        </thead>
+        <tbody>
+@foreach (var item in Model.OrderByDescending(x => x.ParentTicket.TotalScore))
+{
+    string ticketKey = item.ParentTicket.Key;
+    string ticketLink = "https://jira.wedostuffwell.com/browse/" + ticketKey;
+    <tr>
+        <td>@Html.DisplayFor(modelItem => item.ParentTicket.Client)</td>
+        <td>@Html.DisplayFor(modelItem => item.ParentTicket.Source)</td>
+        <td nowrap><a href="@ticketLink" target="_blank">@ticketKey</a></td>
+        @{
+            foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
+            {
+                string status = "Unknown!";
+                string color = "white";
+                if (item.StageColors.ContainsKey(stage))
+                {
+                    color = item.StageColors[stage].DisplayColor;
+                    status = item.StageColors[stage].Status;
+                }
+                <td bgcolor=@color></td>
+            }
+        }
+        <td style="white-space:nowrap" onclick="myFunction(this)">@Html.DisplayFor(modelItem => item.ParentTicket.Description)</td>
+        </tr>
+}
+               
+        </tbody>
+    </table>
+</div>
+
