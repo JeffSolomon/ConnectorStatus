@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using ConnectorStatus.Models;
 using Atlassian.Jira;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace ConnectorStatus.Controllers
 {
@@ -16,18 +17,17 @@ namespace ConnectorStatus.Controllers
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
         private static int MaxIssueCount = 1000;
-        private bool ShowClosed = false;
         private bool AreClosedLoaded = false;
 
 
         // GET: ConnectorStatus
         public ActionResult Index(FormCollection collection, bool showClosed = false, ConnectorBuildItem.SortOrder sortOrder = ConnectorBuildItem.SortOrder.Default, bool ascending = false)
         {
-            ShowClosed = showClosed;
+
             AllParents = new List<ParentTicket>();
             AllChildren = new List<ChildTicket>();
             FinalBuilds = new List<ConnectorBuildItem>();
-            List<ConnectorBuildItem> DiplayBuilds = new List<ConnectorBuildItem>();
+            List<ConnectorBuildItem> DisplayBuilds = new List<ConnectorBuildItem>();
 
 
             ViewBag.StageLabels = (new ChildTicket()).StageNames;
@@ -36,7 +36,7 @@ namespace ConnectorStatus.Controllers
             string username;
             string password;
 
-            if(collection != null && collection.Count>0)
+            if (collection != null && collection.Count > 0)
             {
                 username = collection.Get("username");
                 password = collection.Get("password");
@@ -44,45 +44,50 @@ namespace ConnectorStatus.Controllers
                 {
                     InitiateConnection(username, password);
 
-                    GetParents(showClosed);
+                    GetParents();
 
-                    GetSubTickets();
+                    GetSubTickets(showClosed);
                 }
             }
-            else if(System.Web.HttpContext.Current.Cache["builds"] != null)
+            else if (System.Web.HttpContext.Current.Cache["builds"] != null)
                 FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
 
 
             System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
 
-            if (!showClosed)
-            {
-                foreach (var item in FinalBuilds)
-                    if (item.ParentTicket.Status.ToLower() != "closed")
-                        DiplayBuilds.Add(item);
-            }
-            else if (!AreClosedLoaded)
+
+            if (showClosed && !AreClosedLoaded)
             {
                 AllParents = new List<ParentTicket>();
                 foreach (var build in FinalBuilds)
                     AllParents.Add(build.ParentTicket);
 
-                GetParents(showClosed);
-
-                GetSubTickets();
-                DiplayBuilds = FinalBuilds;
+                GetSubTickets(showClosed);
             }
-            else
-                DiplayBuilds = FinalBuilds;
+
+            DisplayBuilds = FinalBuilds;
 
             if (sortOrder == ConnectorBuildItem.SortOrder.Default)
-                DiplayBuilds = DiplayBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
+                DisplayBuilds = DisplayBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
             else if (sortOrder == ConnectorBuildItem.SortOrder.Client && ascending)
-                DiplayBuilds = DiplayBuilds.OrderBy(x => x.ParentTicket.TotalScore).ToList();
+                DisplayBuilds = DisplayBuilds.OrderBy(x => x.ParentTicket.TotalScore).ToList();
             else if (sortOrder == ConnectorBuildItem.SortOrder.Client && !ascending)
-                DiplayBuilds = DiplayBuilds.OrderBy(x => x.ParentTicket.TotalScore).ToList();
+                DisplayBuilds = DisplayBuilds.OrderBy(x => x.ParentTicket.TotalScore).ToList();
 
-            return View(DiplayBuilds);
+            if (!showClosed)
+                DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed").ToList();
+
+            return View(DisplayBuilds);
+        }
+
+        [HttpPost]
+        public ActionResult Comment(FormCollection collection)
+        {
+            string comment = collection.Get("commentString");
+            string key = collection.Get("key");
+            string showClosed = collection.Get("showClosed").ToLower();
+            bool showClosedbool = showClosed == "true" ? true : false;
+            return RedirectToAction("Index", "ConnectorStatus",  new { showClosed = showClosedbool } );
         }
 
         private void InitiateConnection(string userName, string password)
@@ -100,7 +105,7 @@ namespace ConnectorStatus.Controllers
         }
 
 
-        private void GetParents(bool showClosed)
+        private void GetParents()
         {
             if (Jira != null)
             {
@@ -115,47 +120,50 @@ namespace ConnectorStatus.Controllers
 
                     foreach (var issue in issues)
                     {
-                        if(issue.Status.Name.ToLower() != "closed" || showClosed)
+                        ParentTicket parent = JiraIssueToParentIssue(issue);
+                        if(!AllParents.Contains(parent))
                         {
-                            ParentTicket parent = JiraIssueToParentIssue(issue);
-                            if(!AllParents.Contains(parent))
-                            {
-                                AllParents.Add(parent);
-                                FinalBuilds.Add(new ConnectorBuildItem(parent));
-                            }      
-                        }
-     
+                            AllParents.Add(parent);
+                            FinalBuilds.Add(new ConnectorBuildItem(parent));
+                        }      
                     }
                 }
                 catch{ }
-                if (showClosed)
-                    AreClosedLoaded = true;
 
             }
         }
 
-        private void GetSubTickets()
+        private void GetSubTickets(bool showClosed)
         {
-            foreach(var parent in AllParents.Where( p => p.SubTasks.Count() == 0))
+            if(Jira != null)
             {
-               var currentBuildItem = (from b in FinalBuilds
-                                        where b.ParentTicket.Key == parent.Key
-                                        select b).First();
 
-                foreach (var subTicket in Jira.GetIssuesFromJql(BuildSubTicketJql(parent.Key), 999))
-                {
-                    ChildTicket thisChild = JiraIssueToChildIssue(subTicket);
-                    parent.SubTasks.Add(thisChild);
-                    if(!currentBuildItem.StageColors.ContainsKey(thisChild.TicketStage))
-                        currentBuildItem.StageColors.Add(thisChild.TicketStage, thisChild);
-                }
+                Parallel.ForEach(AllParents.Where(p => p.SubTasks.Count() == 0 && ((p.Status.ToLower() != "closed") || showClosed)), parent =>
+               {
+                   var currentBuildItem = (from b in FinalBuilds
+                                           where b.ParentTicket.Key == parent.Key
+                                           select b).First();
+                   var subTickets = Jira.GetIssuesFromJql(BuildSubTicketJql(parent.Key), 999);
 
-                if(parent.SubTasks.Count == 0)
-                {
-                    FinalBuilds.Remove(currentBuildItem); 
-                }
+                   foreach (var subTicket in subTickets)
+                   {
+                       ChildTicket thisChild = JiraIssueToChildIssue(subTicket);
+                       parent.SubTasks.Add(thisChild);
+                       if (!currentBuildItem.StageColors.ContainsKey(thisChild.TicketStage))
+                           currentBuildItem.StageColors.Add(thisChild.TicketStage, thisChild);
+                   }
 
+                   if (parent.SubTasks.Count == 0)
+                   {
+                       FinalBuilds.Remove(currentBuildItem);
+                   }
+
+               });
+                if (showClosed)
+                    AreClosedLoaded = true;
             }
+            
+
         }
 
         private ChildTicket JiraIssueToChildIssue(Issue issue)
@@ -179,7 +187,7 @@ namespace ConnectorStatus.Controllers
                 Key = issue.Key.ToString(),
                 Assignee = issue.Assignee,
                 TicketType = issue["Ticket Type"].ToString(),
-                Status = issue.Status.ToString(),
+                Status = issue.Status.Name.ToString(),
                 Summary = issue.Summary,
                 Client = issue.Components.Count > 0 ? issue.Components[0].ToString() : "",
                 Source = GetIssueSource(issue),

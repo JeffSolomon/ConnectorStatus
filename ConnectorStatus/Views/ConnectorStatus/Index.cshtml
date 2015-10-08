@@ -72,7 +72,7 @@
                             <a href="@thisChildLink" target="_blank">
                                 <svg width="40" height="30">
                                     <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:lightgray;stroke:black;stroke-width:3;opacity:0.5;" />
-                                    <polygon points="10,7 22,15 10,22"style="fill:green;stroke:green;stroke-width:4;" />
+                                    <polygon points="10,7 22,15 10,22"style="fill:@color;stroke:@color;stroke-width:4;" />
                                 </svg>
                              </a>
                         </g>
@@ -83,7 +83,7 @@
                     <td>
                         <a href="@thisChildLink" target="_blank">
                             <svg width="40" height="30">
-                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:red;stroke:black;stroke-width:3;opacity:0.6;" />
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.6;" />
                             </svg>
                           </a>
                     </td>
@@ -99,12 +99,21 @@
                      </td>
                 }
 
-                <!--td><svg width="30" height="30"><polyline fill="lightgray" stroke="@color" stroke-width="7"points="0,0 15,15 0,30" /></svg></td>-->
             }
         }
          <td style="white-space:nowrap">@Html.DisplayFor(modelItem => item.ParentTicket.Status)</td>  
-         <td style="white-space:nowrap" onclick="myFunction(this)">@Html.DisplayFor(modelItem => item.ParentTicket.Description)</td>
-         
+         <td style="white-space:nowrap">
+             @using (Html.BeginForm("Comment", "ConnectorStatus", "", FormMethod.Post, new { @class = "form-inline" }))
+             {
+                @Html.TextBox("commentString", item.ParentTicket.Description, new { @class = "form-control" })
+                @Html.Hidden("key", item.ParentTicket.Key)
+                 bool toggle = ViewBag.Toggle;
+                 @Html.Hidden("showClosed", !toggle)
+                <input class="btn btn-primary" type="submit" value="Submit Comment" />
+             }
+         </td>
+        
+        
     </tr>
             }
                
