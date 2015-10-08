@@ -15,19 +15,19 @@ namespace ConnectorStatus.Models
 
         public string Client { get; set; }
         public string Source { get; set; }
-
+        public DateTime? DueDate { get; set; }
         public static List<string> ConnectorTeamMembers = new List<string>
         {
             "mayur.sampath",
             "romel.gupta",
             "jeff.solomon",
-            "arushi.pasricha",
             "joshua.aschheim",
             "oren.shapira",
             "joseph.cho",
             "alexander.dillaire",
             "wendong.tang",
-            "kelsey.wade"
+            "kelsey.wade",
+            "omar.nema"
         };
     }
 }

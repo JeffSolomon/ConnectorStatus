@@ -19,7 +19,7 @@
             <tr>
                 <th>Client</th>
                 <th>Source</th>
-                <th>Key</th>
+                <th>Due Date</th>
                 @foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
                 {
                     <th class="rotate-45"><div><span>@ViewBag.StageLabels[stage]</span></div></th>
@@ -32,10 +32,11 @@
 {
     string ticketKey = item.ParentTicket.Key;
     string ticketLink = "https://jira.wedostuffwell.com/browse/" + ticketKey;
+    string dt = item.ParentTicket.DueDate == null ? "" : ((DateTime)item.ParentTicket.DueDate).ToString("d");
     <tr>
         <td data-sortable="true">@Html.DisplayFor(modelItem => item.ParentTicket.Client)</td>
-        <td>@Html.DisplayFor(modelItem => item.ParentTicket.Source)</td>
-        <td nowrap><a href="@ticketLink" target="_blank">@ticketKey</a></td>
+        <td><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
+        <td nowrap>@dt</td>
         @{
             foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
             {
@@ -56,9 +57,9 @@
                     <g>
                         <a href="@thisChildLink" target="_blank">
                             <svg width="40" height="30">
-                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:lightgray;stroke:black;stroke-width:3;opacity:0.5;" />
-                                <polyline points="3,12 12,22 30,5"
-                                          style="fill:none;stroke:@color;stroke-width:4" />
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
+                                @*<polyline points="3,12 12,22 30,5"
+                                          style="fill:none;stroke:@color;stroke-width:4" />*@
 
                             </svg>
                         </a>
@@ -71,8 +72,7 @@
                         <g>
                             <a href="@thisChildLink" target="_blank">
                                 <svg width="40" height="30">
-                                    <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:lightgray;stroke:black;stroke-width:3;opacity:0.5;" />
-                                    <polygon points="10,7 22,15 10,22"style="fill:@color;stroke:@color;stroke-width:4;" />
+                                    <polygon points="5,0 25,15 5,30"style="fill:@color;stroke:black;stroke-width:2;" />
                                 </svg>
                              </a>
                         </g>
@@ -83,7 +83,7 @@
                     <td>
                         <a href="@thisChildLink" target="_blank">
                             <svg width="40" height="30">
-                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.6;" />
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
                             </svg>
                           </a>
                     </td>

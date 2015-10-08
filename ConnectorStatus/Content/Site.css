@@ -111,3 +111,10 @@ th.rotate > div > span {
     width: 200px; /* width of the spinner gif */
     height: 2014px; /*hight of the spinner gif +2px to fix IE8 issue */
 }
+
+.form-inline {
+    padding:0px;
+}
+.form-inline > * {
+    margin:0px 0px !important;
+}

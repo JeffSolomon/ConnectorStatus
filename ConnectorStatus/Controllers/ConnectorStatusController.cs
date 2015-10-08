@@ -43,7 +43,7 @@ namespace ConnectorStatus.Controllers
                 if (!String.IsNullOrEmpty(password))
                 {
                     InitiateConnection(username, password);
-
+                    System.Web.HttpContext.Current.Cache["jira"] = Jira;
                     GetParents();
 
                     GetSubTickets(showClosed);
@@ -52,12 +52,13 @@ namespace ConnectorStatus.Controllers
             else if (System.Web.HttpContext.Current.Cache["builds"] != null)
                 FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
 
-
+            
             System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
 
 
             if (showClosed && !AreClosedLoaded)
             {
+                Jira = System.Web.HttpContext.Current.Cache["jira"] as Jira;
                 AllParents = new List<ParentTicket>();
                 foreach (var build in FinalBuilds)
                     AllParents.Add(build.ParentTicket);
@@ -191,7 +192,8 @@ namespace ConnectorStatus.Controllers
                 Summary = issue.Summary,
                 Client = issue.Components.Count > 0 ? issue.Components[0].ToString() : "",
                 Source = GetIssueSource(issue),
-                Description = issue.Description
+                Description = issue.Description,
+                DueDate = issue.DueDate
             };
         }
 
