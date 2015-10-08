@@ -1,10 +1,5 @@
 ﻿var main = function () {
 
-    $('td').click(function () {
-        $(this).scrollLeft(10);
-
-    });
-
     $('#loadTickets').click(function () {
         
         $(this).removeClass('btn-primary')
@@ -13,6 +8,8 @@
         $('*').fadeTo(2, 0.9)
         $('#spinner').show();
     });
+
+    $('#connectorStatusTable').dataTable();
 
 }
 

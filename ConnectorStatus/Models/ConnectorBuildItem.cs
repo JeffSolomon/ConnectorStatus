@@ -7,6 +7,12 @@ namespace ConnectorStatus.Models
 {
     public class ConnectorBuildItem
     {
+        public enum SortOrder
+        {
+            Client
+            , Source
+            , Default
+        }
         public ConnectorBuildItem(ParentTicket ticket)
         {
             ParentTicket = ticket;
@@ -14,5 +20,8 @@ namespace ConnectorStatus.Models
         }
         public ParentTicket ParentTicket { get; set; }
         public Dictionary<ChildTicket.Stage, ChildTicket> StageColors;
+        public SortOrder sortOrder { get; set; }
     }
+
+
 }

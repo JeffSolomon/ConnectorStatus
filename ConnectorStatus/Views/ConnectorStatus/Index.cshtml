@@ -1,7 +1,7 @@
 ﻿@model List<ConnectorStatus.Models.ConnectorBuildItem>
 @{
     ViewBag.Title = "ConnectorStatusView";
-    string filterLabel = (ViewBag.Toggle ? "Hide" : "Show") + " Completed Connectors";
+    string filterLabel = (ViewBag.Toggle ? "Show" : "Hide" ) + " Completed Connectors";
 }
 
 
@@ -11,29 +11,29 @@
 
 @if (Model.Count > 0)
 {
-@Html.ActionLink(@filterLabel, "Index", new { filterCompleted = ViewBag.Toggle }, new { @class = "btn btn-primary", @style = "color:white" })
+@Html.ActionLink(@filterLabel, "Index", new { showClosed = ViewBag.Toggle }, new { @class = "btn btn-primary", @style = "color:white" })
 
 <div class="container">
-    <table class="table">
+    <table class="table table-striped" id="connectorStatusTable">
         <thead class="table-header-rotated">
             <tr>
-                <th onclick="hide">Client</th>
+                <th>Client</th>
                 <th>Source</th>
                 <th>Key</th>
                 @foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
                 {
                     <th class="rotate-45"><div><span>@ViewBag.StageLabels[stage]</span></div></th>
                 }
-                
+                <th class="rotate-45"><div><span>Build Status</span></div></th>
             </tr>
         </thead>
         <tbody>
-@foreach (var item in Model.OrderByDescending(x => x.ParentTicket.TotalScore))
+@foreach (var item in Model)
 {
     string ticketKey = item.ParentTicket.Key;
     string ticketLink = "https://jira.wedostuffwell.com/browse/" + ticketKey;
     <tr>
-        <td>@Html.DisplayFor(modelItem => item.ParentTicket.Client)</td>
+        <td data-sortable="true">@Html.DisplayFor(modelItem => item.ParentTicket.Client)</td>
         <td>@Html.DisplayFor(modelItem => item.ParentTicket.Source)</td>
         <td nowrap><a href="@ticketLink" target="_blank">@ticketKey</a></td>
         @{
@@ -41,14 +41,14 @@
             {
                 string status = "Unknown!";
                 string color = "white";
-                string thisChildLink = "";
+                string thisChildLink = "https://jira.wedostuffwell.com/browse/";
                 ConnectorStatus.Models.ChildTicket.Score score = ConnectorStatus.Models.ChildTicket.Score.Unassigned;
                 if (item.StageColors.ContainsKey(stage))
                 {
                     color = item.StageColors[stage].DisplayColor;
                     status = item.StageColors[stage].Status;
                     score = item.StageColors[stage].StageScore;
-                    thisChildLink = "https://jira.wedostuffwell.com/browse/" + item.StageColors[stage].Key;
+                    thisChildLink += item.StageColors[stage].Key;
                 }
                 if (score == ConnectorStatus.Models.ChildTicket.Score.Complete)
                 {
@@ -72,9 +72,7 @@
                             <a href="@thisChildLink" target="_blank">
                                 <svg width="40" height="30">
                                     <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:lightgray;stroke:black;stroke-width:3;opacity:0.5;" />
-                                    <polygon points="10,7 22,15 10,22 "
-                                             style="fill:green;stroke:green;stroke-width:4;" />
-
+                                    <polygon points="10,7 22,15 10,22"style="fill:green;stroke:green;stroke-width:4;" />
                                 </svg>
                              </a>
                         </g>
@@ -86,7 +84,6 @@
                         <a href="@thisChildLink" target="_blank">
                             <svg width="40" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:red;stroke:black;stroke-width:3;opacity:0.6;" />
-
                             </svg>
                           </a>
                     </td>
@@ -94,17 +91,21 @@
                 else
                 {
                     <td>
-                        <svg width="40" height="30">
-                            <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style=" fill:lightgray;stroke:black;stroke-width:3;opacity:0.2;" />
-                        </svg>
-                    </td>
+                        <a href="@thisChildLink" target="_blank">
+                            <svg width="40" height="30">
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style=" fill:lightgray;stroke:black;stroke-width:3;opacity:0.2;" />
+                            </svg>
+                        </a>
+                     </td>
                 }
 
                 <!--td><svg width="30" height="30"><polyline fill="lightgray" stroke="@color" stroke-width="7"points="0,0 15,15 0,30" /></svg></td>-->
             }
         }
-        <td style="white-space:nowrap" onclick="myFunction(this)">@Html.DisplayFor(modelItem => item.ParentTicket.Description)</td>
-        </tr>
+         <td style="white-space:nowrap">@Html.DisplayFor(modelItem => item.ParentTicket.Status)</td>  
+         <td style="white-space:nowrap" onclick="myFunction(this)">@Html.DisplayFor(modelItem => item.ParentTicket.Description)</td>
+         
+    </tr>
             }
                
         </tbody>
