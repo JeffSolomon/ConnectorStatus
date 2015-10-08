@@ -15,7 +15,7 @@ namespace ConnectorStatus.Controllers
         private List<ChildTicket> AllChildren;
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
-        private static int MaxIssueCount = 25;
+        private static int MaxIssueCount = 1000;
 
         // GET: ConnectorStatus
         public ActionResult Index(FormCollection collection, bool filterCompleted = false)
@@ -23,23 +23,25 @@ namespace ConnectorStatus.Controllers
             AllParents = new List<ParentTicket>();
             AllChildren = new List<ChildTicket>();
             FinalBuilds = new List<ConnectorBuildItem>();
-
-            if (System.Web.HttpContext.Current.Cache["builds"] == null)
+            string username;
+            string password;
+            if(collection != null && collection.Count>0)
             {
-                string username = collection.Get("username");
-                string password = collection.Get("password");
+                username = collection.Get("username");
+                password = collection.Get("password");
+                if (!String.IsNullOrEmpty(password))
+                {
+                    InitiateConnection(username, password);
 
-                InitiateConnection(username, password);
+                    GetParents();
 
-                GetParents();
-
-                GetSubTickets();
+                    GetSubTickets();
+                }
             }
-            else
+            else if(System.Web.HttpContext.Current.Cache["builds"] != null)
                 FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
 
-
-            ViewBag.StageLabels = FinalBuilds[0].ParentTicket.SubTasks[0].StageNames;
+            ViewBag.StageLabels = (new ChildTicket()).StageNames;
             ViewBag.Toggle = !filterCompleted;
 
             System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
@@ -76,19 +78,23 @@ namespace ConnectorStatus.Controllers
         {
             if (Jira != null)
             {
-                string ticketType = "Build Tracking";
-
-                var issues = from issue in Jira.Issues
-                             where issue.Project == "CD" && issue["Ticket Type"] == new LiteralMatch(ticketType)
-                             orderby issue.Created
-                             select issue;
-
-                foreach (var issue in issues)
+                try
                 {
-                    ParentTicket parent = JiraIssueToParentIssue(issue);
-                    AllParents.Add(parent);
-                    FinalBuilds.Add(new ConnectorBuildItem(parent));
+                    string ticketType = "Build Tracking";
+
+                    var issues = from issue in Jira.Issues
+                                 where issue.Project == "CD" && issue["Ticket Type"] == new LiteralMatch(ticketType)
+                                 orderby issue.Created
+                                 select issue;
+
+                    foreach (var issue in issues)
+                    {
+                        ParentTicket parent = JiraIssueToParentIssue(issue);
+                        AllParents.Add(parent);
+                        FinalBuilds.Add(new ConnectorBuildItem(parent));
+                    }
                 }
+                catch{ }
 
             }
         }

@@ -4,24 +4,20 @@
     string filterLabel = (ViewBag.Toggle ? "Hide" : "Show") + " Completed Connectors";
 }
 
-<script type="text/javascript" language="javascript">
-    function myFunction(elmnt) {
-        if(elmnt.style.style == "white-space:pre-wrap")
-            elmnt.style.style == "white-space:nowrap"
-        else elmnt.style.style = "white-space:pre-wrap"
-    }
-</script>
 
 
 <h2>Connector Status Tracker</h2>
 
+
+@if (Model.Count > 0)
+{
 @Html.ActionLink(@filterLabel, "Index", new { filterCompleted = ViewBag.Toggle }, new { @class = "btn btn-primary", @style = "color:white" })
 
 <div class="container">
     <table class="table">
-        <thead>
+        <thead class="table-header-rotated">
             <tr>
-                <th>Client</th>
+                <th onclick="hide">Client</th>
                 <th>Source</th>
                 <th>Key</th>
                 @foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
@@ -45,19 +41,84 @@
             {
                 string status = "Unknown!";
                 string color = "white";
+                string thisChildLink = "";
+                ConnectorStatus.Models.ChildTicket.Score score = ConnectorStatus.Models.ChildTicket.Score.Unassigned;
                 if (item.StageColors.ContainsKey(stage))
                 {
                     color = item.StageColors[stage].DisplayColor;
                     status = item.StageColors[stage].Status;
+                    score = item.StageColors[stage].StageScore;
+                    thisChildLink = "https://jira.wedostuffwell.com/browse/" + item.StageColors[stage].Key;
                 }
-                <td bgcolor=@color></td>
+                if (score == ConnectorStatus.Models.ChildTicket.Score.Complete)
+                {
+                <td>
+                    <g>
+                        <a href="@thisChildLink" target="_blank">
+                            <svg width="40" height="30">
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:lightgray;stroke:black;stroke-width:3;opacity:0.5;" />
+                                <polyline points="3,12 12,22 30,5"
+                                          style="fill:none;stroke:@color;stroke-width:4" />
+
+                            </svg>
+                        </a>
+                    </g>            
+                </td>
+                }
+                else if (score == ConnectorStatus.Models.ChildTicket.Score.InProgress)
+                {
+                    <td>
+                        <g>
+                            <a href="@thisChildLink" target="_blank">
+                                <svg width="40" height="30">
+                                    <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:lightgray;stroke:black;stroke-width:3;opacity:0.5;" />
+                                    <polygon points="10,7 22,15 10,22 "
+                                             style="fill:green;stroke:green;stroke-width:4;" />
+
+                                </svg>
+                             </a>
+                        </g>
+                    </td>
+                }
+                else if (score == ConnectorStatus.Models.ChildTicket.Score.OnHold)
+                {
+                    <td>
+                        <a href="@thisChildLink" target="_blank">
+                            <svg width="40" height="30">
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:red;stroke:black;stroke-width:3;opacity:0.6;" />
+
+                            </svg>
+                          </a>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <svg width="40" height="30">
+                            <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style=" fill:lightgray;stroke:black;stroke-width:3;opacity:0.2;" />
+                        </svg>
+                    </td>
+                }
+
+                <!--td><svg width="30" height="30"><polyline fill="lightgray" stroke="@color" stroke-width="7"points="0,0 15,15 0,30" /></svg></td>-->
             }
         }
         <td style="white-space:nowrap" onclick="myFunction(this)">@Html.DisplayFor(modelItem => item.ParentTicket.Description)</td>
         </tr>
-}
+            }
                
         </tbody>
     </table>
+    
 </div>
+
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <p><strong>Uh oh! </strong><br />We don't have any tickets to show you! You probably entered an incorrect JIRA username or password. </p>
+                </div>
+                @Html.ActionLink("Try Again!", "Index","Home", null, new { @class = "btn btn-primary", @style = "color:white" })
+
+            }
 
