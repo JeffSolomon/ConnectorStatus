@@ -31,7 +31,7 @@
 @foreach (var item in Model)
 {
     string ticketKey = item.ParentTicket.Key;
-    string ticketLink = "https://jira.wedostuffwell.com/browse/" + ticketKey;
+    string ticketLink = "https://jira.arcadiasolutions.com/browse/" + ticketKey;
     string dt = item.ParentTicket.DueDate == null ? "" : ((DateTime)item.ParentTicket.DueDate).ToString("d");
     <tr>
         <td data-sortable="true">@Html.DisplayFor(modelItem => item.ParentTicket.Client)</td>
@@ -42,7 +42,7 @@
             {
                 string status = "Unknown!";
                 string color = "white";
-                string thisChildLink = "https://jira.wedostuffwell.com/browse/";
+                string thisChildLink = "https://jira.arcadiasolutions.com/browse/";
                 ConnectorStatus.Models.ChildTicket.Score score = ConnectorStatus.Models.ChildTicket.Score.Unassigned;
                 if (item.StageColors.ContainsKey(stage))
                 {

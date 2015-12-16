@@ -95,7 +95,7 @@ namespace ConnectorStatus.Controllers
         {
             try
             {
-                Jira = new Jira("https://jira.wedostuffwell.com/", userName, password);
+                Jira = new Jira("https://jira.arcadiasolutions.com/", userName, password);
                 Jira.MaxIssuesPerRequest = MaxIssueCount;
 
             }
