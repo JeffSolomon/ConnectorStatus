@@ -21,13 +21,14 @@ namespace ConnectorStatus.Models
             "mayur.sampath",
             "romel.gupta",
             "jeff.solomon",
-            "joshua.aschheim",
             "oren.shapira",
-            "joseph.cho",
             "alexander.dillaire",
-            "wendong.tang",
             "kelsey.wade",
-            "omar.nema"
+            "omar.nema",
+            "ze.chen",
+            "simon.ioffe",
+            "nick.daniel",
+            "michael.sanchez"
         };
     }
 }

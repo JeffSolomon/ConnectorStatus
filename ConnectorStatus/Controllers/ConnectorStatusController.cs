@@ -66,7 +66,8 @@ namespace ConnectorStatus.Controllers
                 GetSubTickets(showClosed);
             }
 
-            DisplayBuilds = FinalBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
+            //DisplayBuilds = FinalBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
+            DisplayBuilds = FinalBuilds.OrderBy(x => x.ParentTicket.Client).ToList();
 
             if (!showClosed)
                 DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed").ToList();
@@ -77,12 +78,21 @@ namespace ConnectorStatus.Controllers
         [HttpPost]
         public ActionResult Comment(FormCollection collection)
         {
-            string comment = collection.Get("commentString");
-            string key = collection.Get("key");
-            string showClosed = collection.Get("showClosed").ToLower();
-            bool showClosedbool = showClosed == "true" ? true : false;
-            SubmitComment(key, comment);
-            return RedirectToAction("Index", "ConnectorStatus",  new { showClosed = showClosedbool } );
+            string comment = "";
+            string key = "";
+            int i = 0; 
+            while (comment != null && key != null)
+            {
+                comment = collection.Get("[" + i + "].ParentTicket.Description");
+                key = collection.Get("[" + i + "].ParentTicket.Key");
+                i++;
+                if(key!=null && comment != null)
+                    SubmitIfDifferentComment(key, comment);
+            }
+            //string showClosed = collection.Get("showClosed").ToLower();
+            //bool showClosedbool = showClosed == "true" ? true : false;
+
+            return RedirectToAction("Index", "ConnectorStatus",  false  );
         }
 
         private void InitiateConnection(string userName, string password)
@@ -106,12 +116,7 @@ namespace ConnectorStatus.Controllers
             {
                 try
                 {
-                    string ticketType = "Build Tracking";
-
-                    var issues = from issue in Jira.GetIssuesFromJql("project = \"CD\" AND \"Ticket Type\" = \"Build Tracking\"")
-                                 where issue.Project == "CD" && issue["Ticket Type"] == new LiteralMatch(ticketType)
-                                 orderby issue.Created
-                                 select issue;
+                    var issues = Jira.GetIssuesFromJql("project = \"CD\" AND \"Ticket Type\" = \"Build Tracking\"");
 
                     foreach (var issue in issues)
                     {
@@ -164,24 +169,25 @@ namespace ConnectorStatus.Controllers
 
         }
 
-        private void SubmitComment(string key, string comment)
+        private void SubmitIfDifferentComment(string key, string comment)
         {
             Jira = System.Web.HttpContext.Current.Cache["jira"] as Jira;
             if(Jira != null)
             {
                 var issue = Jira.GetIssue(key);
-                issue.AddComment(comment);
                 FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
                 var issueInCache = FinalBuilds.Where(x => x.ParentTicket.Key == key).Select(x => x).FirstOrDefault();
-                if (issueInCache != null && FinalBuilds.Contains(issueInCache))
+                if(issueInCache!=null && (issueInCache.ParentTicket.Description == null ? "" : Regex.Replace(issueInCache.ParentTicket.Description, @"\s+", "")) != Regex.Replace(comment, @"\s+", ""))
                 {
-                    FinalBuilds.Remove(issueInCache);
-                    issueInCache.ParentTicket.Description = comment;
-                    FinalBuilds.Add(issueInCache);
-                    System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
+                    issue.AddComment(comment);
+                    if (issueInCache != null && FinalBuilds.Contains(issueInCache))
+                    {
+                        FinalBuilds.Remove(issueInCache);
+                        issueInCache.ParentTicket.Description = comment;
+                        FinalBuilds.Add(issueInCache);
+                        System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
+                    }
                 }
-
-
             }
         }
 
