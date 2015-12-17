@@ -14,17 +14,19 @@
 @Html.ActionLink(@filterLabel, "Index", new { showClosed = ViewBag.Toggle }, new { @class = "btn btn-primary", @style = "color:white" })
 
 <div class="container">
+    <br />
+    <br />
     <table class="table table-striped" id="connectorStatusTable">
-        <thead class="table-header-rotated">
+        <thead>
             <tr>
-                <th>Client</th>
-                <th>Source</th>
+                <th data-sort="string" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body">Client</th>
+                <th data-sort="string" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body">Source</th>
                 <th>Due Date</th>
                 @foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
                 {
-                    <th class="rotate-45"><div><span>@ViewBag.StageLabels[stage]</span></div></th>
+                    <th  data-sort="int" data-toggle="tooltip" title="@ViewBag.StageLabels[stage] - Click to sort." data-placement="top" data-container="body">@stage.ToString()</th>
                 }
-                <th class="rotate-45"><div><span>Build Status</span></div></th>
+                <th><div><span>Status</span></div></th>
             </tr>
         </thead>
         <tbody>
@@ -53,9 +55,9 @@
                 }
                 if (score == ConnectorStatus.Models.ChildTicket.Score.Complete)
                 {
-                <td>
+                <td data-sort-value="3">
                     <g>
-                        <a href="@thisChildLink" target="_blank">
+                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
                             <svg width="40" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
                                 @*<polyline points="3,12 12,22 30,5"
@@ -68,9 +70,9 @@
                 }
                 else if (score == ConnectorStatus.Models.ChildTicket.Score.InProgress)
                 {
-                    <td>
+                    <td data-sort-value="1">
                         <g>
-                            <a href="@thisChildLink" target="_blank">
+                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
                                 <svg width="40" height="30">
                                     <polygon points="5,0 25,15 5,30"style="fill:@color;stroke:black;stroke-width:2;" />
                                 </svg>
@@ -80,8 +82,8 @@
                 }
                 else if (score == ConnectorStatus.Models.ChildTicket.Score.OnHold)
                 {
-                    <td>
-                        <a href="@thisChildLink" target="_blank">
+                    <td data-sort-value="2">
+                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
                             <svg width="40" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
                             </svg>
@@ -90,8 +92,8 @@
                 }
                 else
                 {
-                    <td>
-                        <a href="@thisChildLink" target="_blank">
+                    <td data-sort-value="4">
+                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
                             <svg width="40" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style=" fill:lightgray;stroke:black;stroke-width:3;opacity:0.2;" />
                             </svg>
@@ -102,7 +104,7 @@
             }
         }
          <td style="white-space:nowrap">@Html.DisplayFor(modelItem => item.ParentTicket.Status)</td>  
-         <td style="white-space:nowrap">
+         <td style="white-space:nowrap"  data-toggle="tooltip" title="Most recent comment by..."  data-placement="right">
              @using (Html.BeginForm("Comment", "ConnectorStatus", "", FormMethod.Post, new { @class = "form-inline" }))
              {
                 @Html.TextBox("commentString", item.ParentTicket.Description, new { @class = "form-control" })
@@ -132,3 +134,9 @@
 
             }
 
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    $('#connectorStatusTable').stupidtable();
+});
+</script>

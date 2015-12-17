@@ -9,8 +9,9 @@
         $('#spinner').show();
     });
 
-    $('#connectorStatusTable').dataTable();
+    //$('#connectorStatusTable').dataTable();
 
+    
 }
 
 $(document).ready(main);

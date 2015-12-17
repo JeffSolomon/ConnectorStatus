@@ -66,14 +66,7 @@ namespace ConnectorStatus.Controllers
                 GetSubTickets(showClosed);
             }
 
-            DisplayBuilds = FinalBuilds;
-
-            if (sortOrder == ConnectorBuildItem.SortOrder.Default)
-                DisplayBuilds = DisplayBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
-            else if (sortOrder == ConnectorBuildItem.SortOrder.Client && ascending)
-                DisplayBuilds = DisplayBuilds.OrderBy(x => x.ParentTicket.TotalScore).ToList();
-            else if (sortOrder == ConnectorBuildItem.SortOrder.Client && !ascending)
-                DisplayBuilds = DisplayBuilds.OrderBy(x => x.ParentTicket.TotalScore).ToList();
+            DisplayBuilds = FinalBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
 
             if (!showClosed)
                 DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed").ToList();
@@ -88,6 +81,7 @@ namespace ConnectorStatus.Controllers
             string key = collection.Get("key");
             string showClosed = collection.Get("showClosed").ToLower();
             bool showClosedbool = showClosed == "true" ? true : false;
+            SubmitComment(key, comment);
             return RedirectToAction("Index", "ConnectorStatus",  new { showClosed = showClosedbool } );
         }
 
@@ -129,7 +123,10 @@ namespace ConnectorStatus.Controllers
                         }      
                     }
                 }
-                catch{ }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
 
             }
         }
@@ -167,6 +164,27 @@ namespace ConnectorStatus.Controllers
 
         }
 
+        private void SubmitComment(string key, string comment)
+        {
+            Jira = System.Web.HttpContext.Current.Cache["jira"] as Jira;
+            if(Jira != null)
+            {
+                var issue = Jira.GetIssue(key);
+                issue.AddComment(comment);
+                FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
+                var issueInCache = FinalBuilds.Where(x => x.ParentTicket.Key == key).Select(x => x).FirstOrDefault();
+                if (issueInCache != null && FinalBuilds.Contains(issueInCache))
+                {
+                    FinalBuilds.Remove(issueInCache);
+                    issueInCache.ParentTicket.Description = comment;
+                    FinalBuilds.Add(issueInCache);
+                    System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
+                }
+
+
+            }
+        }
+
         private ChildTicket JiraIssueToChildIssue(Issue issue)
         {
             return new ChildTicket
@@ -183,6 +201,12 @@ namespace ConnectorStatus.Controllers
 
         private ParentTicket JiraIssueToParentIssue(Issue issue)
         {
+            var comments = issue.GetComments();
+            string desc;
+            if (comments != null && comments.Count > 0)
+                desc = comments.OrderByDescending(c => c.CreatedDate).FirstOrDefault().Body;
+            else
+                desc = issue.Description;
             return new ParentTicket
             {
                 Key = issue.Key.ToString(),
@@ -192,7 +216,7 @@ namespace ConnectorStatus.Controllers
                 Summary = issue.Summary,
                 Client = issue.Components.Count > 0 ? issue.Components[0].ToString() : "",
                 Source = GetIssueSource(issue),
-                Description = issue.Description,
+                Description = desc,
                 DueDate = issue.DueDate
             };
         }
