@@ -104,7 +104,7 @@
             }
         }
          <td style="white-space:nowrap">@Html.DisplayFor(modelItem => item.ParentTicket.Status)</td>  
-         <td style="white-space:nowrap"  data-toggle="tooltip" title="Most recent comment by..."  data-placement="right">
+         <td style="white-space:nowrap"  data-toggle="tooltip" title="@item.ParentTicket.Description"  data-placement="bottom">
              @using (Html.BeginForm("Comment", "ConnectorStatus", "", FormMethod.Post, new { @class = "form-inline" }))
              {
                 @Html.TextBox("commentString", item.ParentTicket.Description, new { @class = "form-control" })
