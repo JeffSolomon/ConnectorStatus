@@ -43,22 +43,22 @@ namespace ConnectorStatus.Controllers
                 if (!String.IsNullOrEmpty(password))
                 {
                     InitiateConnection(username, password);
-                    System.Web.HttpContext.Current.Cache["jira"] = Jira;
+                    Session["jira"] = Jira;
                     GetParents();
 
                     GetSubTickets(showClosed);
                 }
             }
-            else if (System.Web.HttpContext.Current.Cache["builds"] != null)
-                FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
+            else if (Session["builds"] != null)
+                FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;
 
             
-            System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
+            Session["builds"] = FinalBuilds;
 
 
             if (showClosed && !AreClosedLoaded)
             {
-                Jira = System.Web.HttpContext.Current.Cache["jira"] as Jira;
+                Jira = Session["jira"] as Jira;
                 AllParents = new List<ParentTicket>();
                 foreach (var build in FinalBuilds)
                     AllParents.Add(build.ParentTicket);
@@ -171,11 +171,11 @@ namespace ConnectorStatus.Controllers
 
         private void SubmitIfDifferentComment(string key, string comment)
         {
-            Jira = System.Web.HttpContext.Current.Cache["jira"] as Jira;
+            Jira = Session["jira"] as Jira;
             if(Jira != null)
             {
                 var issue = Jira.GetIssue(key);
-                FinalBuilds = System.Web.HttpContext.Current.Cache["builds"] as List<ConnectorBuildItem>;
+                FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;
                 var issueInCache = FinalBuilds.Where(x => x.ParentTicket.Key == key).Select(x => x).FirstOrDefault();
                 if(issueInCache!=null && (issueInCache.ParentTicket.Description == null ? "" : Regex.Replace(issueInCache.ParentTicket.Description, @"\s+", "")) != Regex.Replace(comment, @"\s+", ""))
                 {
@@ -185,7 +185,7 @@ namespace ConnectorStatus.Controllers
                         FinalBuilds.Remove(issueInCache);
                         issueInCache.ParentTicket.Description = comment;
                         FinalBuilds.Add(issueInCache);
-                        System.Web.HttpContext.Current.Cache["builds"] = FinalBuilds;
+                        Session["builds"] = FinalBuilds;
                     }
                 }
             }
