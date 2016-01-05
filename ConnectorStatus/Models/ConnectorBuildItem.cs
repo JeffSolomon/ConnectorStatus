@@ -16,10 +16,10 @@ namespace ConnectorStatus.Models
         public ConnectorBuildItem(ParentTicket ticket)
         {
             ParentTicket = ticket;
-            StageColors = new Dictionary<ChildTicket.Stage, ChildTicket>();
+            StageColors = new Dictionary<string, ChildTicket>();
         }
         public ParentTicket ParentTicket { get; set; }
-        public Dictionary<ChildTicket.Stage, ChildTicket> StageColors;
+        public Dictionary<string, ChildTicket> StageColors;
         public SortOrder sortOrder { get; set; }
     }
 

@@ -1,6 +1,6 @@
 ﻿@model List<ConnectorStatus.Models.ConnectorBuildItem>
 @{
-    ViewBag.Title = "ConnectorStatusView";
+    ViewBag.Title = "Connector Status";
     string filterLabel = (ViewBag.Toggle ? "Show" : "Hide" ) + " Completed Connectors";
 }
 
@@ -23,11 +23,12 @@
             <tr>
                 <th data-sort="string" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body">Client</th>
                 <th data-sort="string" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body">Source</th>
-                <th>Due Date</th>
-                @foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
+                <th><!--Due Date--></th>
+                <th colspan="19" data-sort="int" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body" ></th>
+                @*@foreach (var stage in (new ConnectorStatus.Models.ChildTicket()).Stages)
                 {
-                    <th  data-sort="int" data-toggle="tooltip" title="@ViewBag.StageLabels[stage] - Click to sort." data-placement="top" data-container="body">@stage.ToString()</th>
-                }
+                    
+                }*@
                 <th><div><span>Status</span></div></th>
             </tr>
         </thead>
@@ -43,80 +44,48 @@
         <td><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
         <td nowrap>@dt</td>
         @{
-            foreach (ConnectorStatus.Models.ChildTicket.Stage stage in Enum.GetValues(typeof(ConnectorStatus.Models.ChildTicket.Stage)))
+            foreach (var stage in (new ConnectorStatus.Models.ChildTicket()).Stages)
             {
                 string status = "Unknown!";
                 string color = "white";
                 string thisChildLink = "https://jira.arcadiasolutions.com/browse/";
-                ConnectorStatus.Models.ChildTicket.Score score = ConnectorStatus.Models.ChildTicket.Score.Unassigned;
-                if (item.StageColors.ContainsKey(stage))
+                ConnectorStatus.Models.ChildTicket.StatusCode score = ConnectorStatus.Models.ChildTicket.StatusCode.BackLog;
+                if (item.StageColors.ContainsKey(stage.Value))
                 {
-                    color = item.StageColors[stage].DisplayColor;
-                    status = item.StageColors[stage].Status;
-                    score = item.StageColors[stage].StageScore;
-                    thisChildLink += item.StageColors[stage].Key;
+                    color = item.StageColors[stage.Value].DisplayColor;
+                    status = item.StageColors[stage.Value].Status;
+                    score = item.StageColors[stage.Value].StageScore;
+                    thisChildLink += item.StageColors[stage.Value].Key;
                 }
-                if (score == ConnectorStatus.Models.ChildTicket.Score.Complete)
-                {
-                <td data-sort-value="3">
-                    <g>
-                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
-                            <svg width="40" height="30">
-                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
-                                @*<polyline points="3,12 12,22 30,5"
-                                          style="fill:none;stroke:@color;stroke-width:4" />*@
-
-                            </svg>
-                        </a>
-                    </g>            
-                </td>
-                }
-                else if (score == ConnectorStatus.Models.ChildTicket.Score.InProgress)
+                if (score == ConnectorStatus.Models.ChildTicket.StatusCode.InProgress)
                 {
                     <td data-sort-value="1">
                         <g>
-                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
+                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value" data-placement="right">
                                 <svg width="40" height="30">
-                                    <polygon points="5,0 25,15 5,30"style="fill:@color;stroke:black;stroke-width:2;" />
+                                    <polygon points="5,0 25,15 5,30" style="fill:@color;stroke:black;stroke-width:2;" />
                                 </svg>
-                             </a>
+                            </a>
                         </g>
                     </td>
                 }
-                else if (score == ConnectorStatus.Models.ChildTicket.Score.OnHold)
+                else
                 {
                     <td data-sort-value="2">
-                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
+                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value" data-placement="right">
                             <svg width="40" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
                             </svg>
                           </a>
                     </td>
                 }
-                else
-                {
-                    <td data-sort-value="4">
-                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@ViewBag.StageLabels[stage]" data-placement="right">
-                            <svg width="40" height="30">
-                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style=" fill:lightgray;stroke:black;stroke-width:3;opacity:0.2;" />
-                            </svg>
-                        </a>
-                     </td>
-                }
+                
 
             }
         }
          <td style="white-space:nowrap">@Html.DisplayFor(modelItem => item.ParentTicket.Status)</td>  
-         <td style="white-space:nowrap"  data-toggle="tooltip" title="@item.ParentTicket.Description"  data-placement="bottom">@Html.TextBoxFor(m => Model[i].ParentTicket.Description, new { @class = "form-control" })
+         <td style="white-space:nowrap; padding-left: 10px; padding-bottom:6px;"  data-toggle="tooltip" title="@item.ParentTicket.Description"  data-placement="bottom">@Html.TextBoxFor(m => Model[i].ParentTicket.Description, new { @class = "form-control" })
              @Html.HiddenFor(m => Model[i].ParentTicket.Key)
-             @*@using (Html.BeginForm("Comment", "ConnectorStatus", "", FormMethod.Post, new { @class = "form-inline"}))
-             {
-                 @Html.TextBox("commentString", item.ParentTicket.Description, new { @class = "form-control" })
-                 @Html.Hidden("key", item.ParentTicket.Key)
-                 bool toggle = ViewBag.Toggle;
-                 @Html.Hidden("showClosed", !toggle)
-                <input class="btn btn-primary" type="submit" value="Submit Comment" />
-             }*@
          </td>
         
         

@@ -1445,13 +1445,15 @@ th {
 .table thead > tr > td,
 .table tbody > tr > td,
 .table tfoot > tr > td {
-  padding: 8px;
+  padding-left: 0px;
+  padding-top: 10px;
   line-height: 1.428571429;
-  vertical-align: top;
+  vertical-align: central;
   border-top: 1px solid #dddddd;
 }
 
 .table thead > tr > th {
+    padding-left: 5px;
   vertical-align: bottom;
   border-bottom: 2px solid #dddddd;
 }

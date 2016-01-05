@@ -16,6 +16,7 @@ namespace ConnectorStatus.Controllers
         private List<ChildTicket> AllChildren;
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
+        private static string BaseURL = "https://jira-dev.arcadiasolutions.com/";
         private static int MaxIssueCount = 1000;
         private bool AreClosedLoaded = false;
 
@@ -30,7 +31,7 @@ namespace ConnectorStatus.Controllers
             List<ConnectorBuildItem> DisplayBuilds = new List<ConnectorBuildItem>();
 
 
-            ViewBag.StageLabels = (new ChildTicket()).StageNames;
+            ViewBag.StageLabels = (new ChildTicket()).Stages;
             ViewBag.Toggle = !showClosed;
 
             string username;
@@ -99,7 +100,7 @@ namespace ConnectorStatus.Controllers
         {
             try
             {
-                Jira = new Jira("https://jira.arcadiasolutions.com/", userName, password);
+                Jira = new Jira(BaseURL, userName, password);
                 Jira.MaxIssuesPerRequest = MaxIssueCount;
 
             }
@@ -116,7 +117,7 @@ namespace ConnectorStatus.Controllers
             {
                 try
                 {
-                    var issues = Jira.GetIssuesFromJql("project = \"CD\" AND \"Ticket Type\" = \"Build Tracking\"");
+                    var issues = Jira.GetIssuesFromJql("\"Data Source Name\" IS NOT EMPTY AND \"Implementation Round\" IS NOT EMPTY AND type = Epic and \"Customer Name\" is not EMPTY and labels = JeffSApp");
 
                     foreach (var issue in issues)
                     {
@@ -146,7 +147,7 @@ namespace ConnectorStatus.Controllers
                    var currentBuildItem = (from b in FinalBuilds
                                            where b.ParentTicket.Key == parent.Key
                                            select b).First();
-                   var subTickets = Jira.GetIssuesFromJql(BuildSubTicketJql(parent.Key), 999);
+                   var subTickets = Jira.GetIssuesFromJql(BuildSubTicketJql(parent), 999);
 
                    foreach (var subTicket in subTickets)
                    {
@@ -193,6 +194,8 @@ namespace ConnectorStatus.Controllers
 
         private ChildTicket JiraIssueToChildIssue(Issue issue)
         {
+            var test = issue.CustomFields.Where(c => c.Id == "customfield_11511");
+            //issue["Implementation Phase"].ToString(),//GetIssueStage(issue),
             return new ChildTicket
             {
                 Key = issue.Key.ToString(),
@@ -200,8 +203,10 @@ namespace ConnectorStatus.Controllers
                 //TicketType = issue["Ticket Type"] != null ? issue["Ticket Type"].ToString() : "",
                 Status = issue.Status.Name,
                 Summary = issue.Summary,
-                TicketStage = GetIssueStage(issue),
-                Client = issue.Components.Count > 0 ? issue.Components[0].ToString() : ""
+                TicketStage = test.FirstOrDefault().Values.FirstOrDefault(),
+                Client = issue["Customer Name"].ToString(),
+                Source = issue["Data Source Name"].ToString(),
+                ImplementationRound = issue["Implementation Round"].ToString()
             };
         }
 
@@ -217,28 +222,33 @@ namespace ConnectorStatus.Controllers
             {
                 Key = issue.Key.ToString(),
                 Assignee = issue.Assignee,
-                TicketType = issue["Ticket Type"].ToString(),
+                //TicketType = issue["Ticket Type"].ToString(),
                 Status = issue.Status.Name.ToString(),
                 Summary = issue.Summary,
-                Client = issue.Components.Count > 0 ? issue.Components[0].ToString() : "",
-                Source = GetIssueSource(issue),
+                Client = issue["Customer Name"].ToString(),
+                Source = issue["Data Source Name"].ToString(),
                 Description = desc,
-                DueDate = issue.DueDate
+                DueDate = issue.DueDate,
+                ImplementationRound = issue["Implementation Round"].ToString(),
+
             };
         }
 
-        private string BuildSubTicketJql(string parentTicket)
+        private string BuildSubTicketJql(ParentTicket parentTicket)
         {
-            return "parent = \"" + parentTicket + "\"";
+            return "\"Data Source Name\" = \""+parentTicket.Source+ "\" AND \"Customer Name\" = \"" + parentTicket.Client + "\" AND \"Implementation Round\" ~ \"" + parentTicket.ImplementationRound + "\" AND type = Story and \"Implementation Phase\" is not EMPTY";
+            //
         }
 
-        private ChildTicket.Stage GetIssueStage(Issue issue)
-        {
-            Regex rgx = new Regex(@"(?<=\b[Ss]tage\s)(\w+)");
-            ChildTicket.Stage stage;
-            Enum.TryParse(rgx.Match(issue.Summary).Value, out stage);
-            return stage;
-        }
+        //private ChildTicket.Stage GetIssueStage(Issue issue)
+        //{
+        //    //Regex rgx = new Regex(@"(?<=\b[Ss]tage\s)(\w+)");
+        //    string implementationPhase = issue["Implementation Phase"].ToString().Replace(' ', '_').Replace('-','');
+        //    ChildTicket.Stage stage;
+        //    Enum.TryParse(implementationPhase, out stage);
+            
+        //    return stage;
+        //}
 
         private string GetIssueSource(Issue issue)
         {

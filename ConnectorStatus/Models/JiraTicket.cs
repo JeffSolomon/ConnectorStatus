@@ -16,6 +16,11 @@ namespace ConnectorStatus.Models
         public string Client { get; set; }
         public string Source { get; set; }
         public DateTime? DueDate { get; set; }
+
+        public string ImplementationPhase { get; set; }
+        public string ImplementationRound { get; set; }
+
+
         public static List<string> ConnectorTeamMembers = new List<string>
         {
             "mayur.sampath",

@@ -7,55 +7,61 @@ namespace ConnectorStatus.Models
 {
     public class ChildTicket : JiraTicket
     {
-        public enum Stage
+        public SortedList<int, string> Stages = new SortedList<int, string>()
         {
-            A,
-            B,
-            C,
-            D,
-            E,
-            F,
-            G,
-            H,
-            I,
-            J
-        }
-
-        public enum Score
-        {
-            Unassigned,
-            OnHold,
-            InProgress,
-            Complete
-        }
-
-        public Dictionary<Stage, string> StageNames = new Dictionary<Stage, string>
-        {
-            { Stage.A, "Receive Build Request" },
-            { Stage.B, "Define Architecture" },
-            { Stage.C, "Establish Project" },
-            { Stage.D, "Prepare Infrastructure" },
-            { Stage.E, "Perform Walkthrough" },
-            { Stage.F, "Create Queries" },
-            { Stage.G, "Review Code" },
-            { Stage.H, "Implement Connector" },
-            { Stage.I, "Test Connector" },
-            { Stage.J, "Handoff to QA" }
+            { 1, "Kick Off"},
+            { 2, "Client Access"},
+            { 3, "Requirements"},
+            { 4, "Environment Build"},
+            { 5, "Query Development"},
+            { 6, "Code Review"},
+            { 7, "Extract And Load"},
+            { 8, "Seed Data Prep"},
+            { 9, "Clinical Review"},
+            { 10, "DQA"},
+            { 11, "Verification"},
+            { 12, "Deliver to QA"},
+            { 13, "SIT Prep"},
+            { 14, "SIT Execute"},
+            { 15, "UAT Prep"},
+            { 16, "UAT Execute"},
+            { 17, "Go-Live Approval"},
+            { 18, "Go-Live"},
+            { 19, "Completed"}
         };
 
-        public Stage TicketStage { get; set; }
-        public Score StageScore
+        public enum StatusCode
+        {
+            BackLog,
+            OnHoldExternal,
+            OnHoldInternal,
+            Open,
+            InProgress,
+            Complete,
+            Closed
+        }
+
+
+        public string TicketStage { get; set; }
+
+        public StatusCode StageScore
         {
             get
             {
-                if (this.Status.ToLower() == "closed")
-                    return Score.Complete;
-                else if (this.Assignee == null)
-                    return Score.Unassigned;
-                else if (ConnectorTeamMembers.Contains(this.Assignee))
-                    return Score.InProgress;
-                else
-                    return Score.OnHold;
+                //if (this.Status.ToLower() == "in progress")
+                //    return Score.InProgress;
+                //else if (this.Assignee == null)
+                //    return Score.Unassigned;
+                //else if (ConnectorTeamMembers.Contains(this.Assignee))
+                //    return Score.InProgress;
+                //else
+                //    return Score.OnHold;
+                foreach(StatusCode status in Enum.GetValues(typeof(StatusCode)))
+                {
+                    if (this.Status.ToLower().Replace(" ", "").Replace("-","") == status.ToString().ToLower())
+                        return status;
+                }
+                return StatusCode.BackLog;
             }
         } 
                 
@@ -63,12 +69,16 @@ namespace ConnectorStatus.Models
         {
             get
             {
-                string finalColor = "green";
-                if (StageScore == Score.Complete)
+                string finalColor;
+                if (StageScore == StatusCode.Complete)
                     finalColor = "#1565C0";
-                else if (StageScore == Score.Unassigned)
+                else if (StageScore == StatusCode.Closed)
+                    finalColor = "#1565C0";
+                else if (StageScore == StatusCode.BackLog)
                     finalColor = "white";
-                else if (StageScore == Score.InProgress)
+                else if (StageScore == StatusCode.InProgress)
+                    finalColor = "#4CAF50";
+                else if (StageScore == StatusCode.Open)
                     finalColor = "#4CAF50";
                 else
                     finalColor = "#F44336";
