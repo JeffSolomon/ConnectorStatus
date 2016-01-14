@@ -15,7 +15,7 @@ namespace ConnectorStatus.Models
             { 4, "Environment Build"},
             { 5, "Query Development"},
             { 6, "Code Review"},
-            { 7, "Extract And Load"},
+            { 7, "Extract and Load"},
             { 8, "Seed Data Prep"},
             { 9, "Clinical Review"},
             { 10, "DQA"},

@@ -1447,8 +1447,10 @@ th {
 .table tfoot > tr > td {
   padding-left: 0px;
   padding-top: 10px;
+  padding-bottom: 4px;
   line-height: 1.428571429;
   vertical-align: central;
+  text-align:center;
   border-top: 1px solid #dddddd;
 }
 

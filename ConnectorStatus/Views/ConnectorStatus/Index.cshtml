@@ -61,7 +61,7 @@
                 {
                     <td data-sort-value="1">
                         <g>
-                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value" data-placement="right">
+                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (@status)" data-placement="right">
                                 <svg width="40" height="30">
                                     <polygon points="5,0 25,15 5,30" style="fill:@color;stroke:black;stroke-width:2;" />
                                 </svg>
@@ -69,17 +69,25 @@
                         </g>
                     </td>
                 }
+                else if (status == "Unknown!")
+                {
+                    <td>
+                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (Ticket Missing!)" data-placement="right">
+                            <i class="glyphicon glyphicon-exclamation-sign" style="font-size:24px;color:lightgray;padding-right:5px;vertical-align:central"></i>
+                        </a>
+                    </td>
+                }
                 else
                 {
                     <td data-sort-value="2">
-                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value" data-placement="right">
-                            <svg width="40" height="30">
-                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:3;opacity:0.7;" />
+                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (@status)" data-placement="right">
+                            <svg width="30" height="30">
+                                <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:2;opacity:0.7;" />
                             </svg>
                           </a>
                     </td>
                 }
-                
+
 
             }
         }
@@ -112,6 +120,8 @@
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
     $('#connectorStatusTable').stupidtable();
+    //$('table').filterTable({ containerClass: "alert alert-warning" });
+    $('table').filterTable();
     $('#submitComments').click(function () {
 
         $(this).removeClass('btn-primary')

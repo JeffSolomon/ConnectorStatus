@@ -16,7 +16,7 @@ namespace ConnectorStatus.Controllers
         private List<ChildTicket> AllChildren;
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
-        private static string BaseURL = "https://jira-dev.arcadiasolutions.com/";
+        private static string BaseURL = "https://jira.arcadiasolutions.com/";
         private static int MaxIssueCount = 1000;
         private bool AreClosedLoaded = false;
 
@@ -67,8 +67,7 @@ namespace ConnectorStatus.Controllers
                 GetSubTickets(showClosed);
             }
 
-            //DisplayBuilds = FinalBuilds.OrderByDescending(x => x.ParentTicket.TotalScore).ToList();
-            DisplayBuilds = FinalBuilds.OrderBy(x => x.ParentTicket.Client).ToList();
+            DisplayBuilds = FinalBuilds.Where(p => p.ParentTicket.SubTasks != null && p.ParentTicket.SubTasks.Count > 0).OrderBy(x => x.ParentTicket.Client).ToList();
 
             if (!showClosed)
                 DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed").ToList();
@@ -117,7 +116,7 @@ namespace ConnectorStatus.Controllers
             {
                 try
                 {
-                    var issues = Jira.GetIssuesFromJql("\"Data Source Name\" IS NOT EMPTY AND \"Implementation Round\" IS NOT EMPTY AND type = Epic and \"Customer Name\" is not EMPTY and labels = JeffSApp");
+                    var issues = Jira.GetIssuesFromJql("project = AAI and \"Data Source Name\" IS NOT EMPTY AND \"Implementation Round\" IS NOT EMPTY AND type = Epic and \"Customer Name\" is not EMPTY");
 
                     foreach (var issue in issues)
                     {
@@ -236,7 +235,7 @@ namespace ConnectorStatus.Controllers
 
         private string BuildSubTicketJql(ParentTicket parentTicket)
         {
-            return "\"Data Source Name\" = \""+parentTicket.Source+ "\" AND \"Customer Name\" = \"" + parentTicket.Client + "\" AND \"Implementation Round\" ~ \"" + parentTicket.ImplementationRound + "\" AND type = Story and \"Implementation Phase\" is not EMPTY";
+            return "project = AAI and \"Data Source Name\" = \"" + parentTicket.Source+ "\" AND \"Customer Name\" = \"" + parentTicket.Client + "\" AND \"Implementation Round\" = \"" + parentTicket.ImplementationRound + "\" AND type = Story and \"Implementation Phase\" is not EMPTY";
             //
         }
 
