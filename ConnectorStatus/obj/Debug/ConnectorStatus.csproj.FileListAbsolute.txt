@@ -15,6 +15,7 @@ C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\ConnectorStatus.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\ConnectorStatus.pdb
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Antlr3.Runtime.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Atlassian.Jira.dll
+C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\JiraRestClient.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Microsoft.Web.Infrastructure.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Newtonsoft.Json.dll
@@ -42,5 +43,3 @@ C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\System.Web.WebPages.Razor.xml
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Antlr3.Runtime.pdb
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.pdb
-C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.csprojResolveAssemblyReference.cache
-C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\JiraRestClient.dll

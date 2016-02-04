@@ -1,36 +1,93 @@
 ﻿@model List<ConnectorStatus.Models.ConnectorBuildItem>
 @{
     ViewBag.Title = "Connector Status";
-    string filterLabel = (ViewBag.Toggle ? "Show" : "Hide" ) + " Completed Connectors";
 }
 
 
-
-<h2>Connector Status Tracker</h2>
-
+ 
 
 @if (Model.Count > 0)
 {
-@Html.ActionLink(@filterLabel, "Index", new { showClosed = ViewBag.Toggle }, new { @class = "btn btn-primary", @style = "color:white" })
 
 <div class="container">
-    <br />
-    <br />
+
+    <div class="container" style="padding-top:10px;">
+        <div class="row">
+            <div class="col-md-3">
+                <input id="visibleSearch" type="search" class="form-control" placeholder="Search" />
+            </div>
+            <div class="col-md-2">
+                <div class="panel-group">
+                    <div class="panel panel-default" style="float:left">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" href="#collapseClients">CLIENTS</a>
+                            </h4>
+                        </div>
+                        <div id="collapseClients" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <div class="btn-group-vertical">
+                                    @foreach (var client in Model.Select(m => m.ParentTicket.Client).Distinct())
+                                    {
+                                        <button type="button" class="btn btn-default select" data-toggle="button" value="@client">@client</button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+                
+            <div class="col-md-3">
+                <div class="panel-group">
+                    <!--style="max-width:20%; padding-bottom:20px; position: fixed; bottom:20%; left:1px;"-->
+                    <div class="panel panel-default" style="float:left">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" href="#collapse1">LEGEND</a>
+                            </h4>
+                        </div>
+                        <div id="collapse1" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <ul class="list-group">
+                                    @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.StageColors)
+                                    {
+                                        <li class="list-group-item"><svg style="max-height:20px;max-width:25px;padding-right:5px;"><rect x="2.5" y="2.5" rx="2.5" ry="2.5" width="16" height="16" style="fill:@stage.Value;stroke:black;stroke-width:2;opacity:0.7;" /></svg>@System.Text.RegularExpressions.Regex.Replace(stage.Key.ToString(), "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 ")</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>   
+        </div>
+    </div>
+
+
+    <h2>CONNECTOR STATUS TRACKER</h2>
+
+
+    
+
+    
+    
+
 @using (Html.BeginForm("Comment", "ConnectorStatus", "", FormMethod.Post, new { @class = "form-inline" }))
 {
-    <table class="table table-striped" id="connectorStatusTable">
+    <table class="table" id="connectorStatusTable">
         <thead>
             <tr>
-                <th data-sort="string" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body">Client</th>
-                <th data-sort="string" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body">Source</th>
-                <th><!--Due Date--></th>
-                <th colspan="19" data-sort="int" data-toggle="tooltip" title="Click to sort." data-placement="top" data-container="body" ></th>
-                @*@foreach (var stage in (new ConnectorStatus.Models.ChildTicket()).Stages)
-                {
-                    
-                }*@
-                <th><div><span>Status</span></div></th>
-            </tr>
+    <th style="text-align:left">Contract</th>
+    <th style="text-align:left">Connector</th>
+
+    @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.Stages)
+    {
+        <th class="rotate"><div><span>@stage.Value</span></div></th>
+    }
+            
+      
+            <th>Overall Status</th>
+        </tr>
         </thead>
         <tbody>
 @for (int i = 0; i < Model.Count; i++)
@@ -40,59 +97,57 @@
     string ticketLink = "https://jira.arcadiasolutions.com/browse/" + ticketKey;
     string dt = item.ParentTicket.DueDate == null ? "" : ((DateTime)item.ParentTicket.DueDate).ToString("d");
     <tr>
-        <td data-sortable="true">@Html.DisplayFor(modelItem => item.ParentTicket.Client)</td>
-        <td><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
-        <td nowrap>@dt</td>
+        <td>@Html.DisplayFor(modelItem => item.ParentTicket.ContractID)</td>
+        <td style="white-space:nowrap; text-align:left" data-sortable="true"><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Client) - @Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
+        <!--<td><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>-->
+        
         @{
-            foreach (var stage in (new ConnectorStatus.Models.ChildTicket()).Stages)
+            foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.Stages)
             {
                 string status = "Unknown!";
                 string color = "white";
                 string thisChildLink = "https://jira.arcadiasolutions.com/browse/";
-                ConnectorStatus.Models.ChildTicket.StatusCode score = ConnectorStatus.Models.ChildTicket.StatusCode.BackLog;
+                ConnectorStatus.Models.BuildProcessConfig.StatusCode score = ConnectorStatus.Models.BuildProcessConfig.StatusCode.BackLog;
+                string tooltipLabel;
+                string tdType = "<td>";
+                if (stage.Value == "Environment Build" || stage.Value == "Deliver to QA")
+                { tdType = "phase-divider"; }
                 if (item.StageColors.ContainsKey(stage.Value))
                 {
                     color = item.StageColors[stage.Value].DisplayColor;
                     status = item.StageColors[stage.Value].Status;
                     score = item.StageColors[stage.Value].StageScore;
                     thisChildLink += item.StageColors[stage.Value].Key;
+                    tooltipLabel = stage.Value + " <br><strong>" + status + "</strong>";
                 }
-                if (score == ConnectorStatus.Models.ChildTicket.StatusCode.InProgress)
-                {
-                    <td data-sort-value="1">
-                        <g>
-                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (@status)" data-placement="right">
-                                <svg width="40" height="30">
-                                    <polygon points="5,0 25,15 5,30" style="fill:@color;stroke:black;stroke-width:2;" />
-                                </svg>
-                            </a>
-                        </g>
-                    </td>
-                }
-                else if (status == "Unknown!")
+
+                if (status == "Unknown!")
                 {
                     <td>
-                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (Ticket Missing!)" data-placement="right">
-                            <i class="glyphicon glyphicon-exclamation-sign" style="font-size:24px;color:lightgray;padding-right:5px;vertical-align:central"></i>
-                        </a>
+                        <div style="max-height:3px;">
+                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (Ticket Missing!)" data-placement="right">
+                                <i class="glyphicon glyphicon-exclamation-sign" style="font-size:24px;color:lightgray;padding-right:5px;vertical-align:central"></i>
+                            </a>
+                        </div>
                     </td>
                 }
                 else
                 {
-                    <td data-sort-value="2">
-                        <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (@status)" data-placement="right">
+                    <td class="@tdType">
+                        <div style="max-height:30px;">
+                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" data-placement="bottom" data-html="true" title="@stage.Value <br> <strong>@status</strong>" data-placement="right">
                             <svg width="30" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:2;opacity:0.7;" />
                             </svg>
                           </a>
+                        </div>
                     </td>
                 }
 
 
             }
         }
-         <td style="white-space:nowrap">@Html.DisplayFor(modelItem => item.ParentTicket.Status)</td>  
-         <td style="white-space:nowrap; padding-left: 10px; padding-bottom:6px;"  data-toggle="tooltip" title="@item.ParentTicket.Description"  data-placement="bottom">@Html.TextBoxFor(m => Model[i].ParentTicket.Description, new { @class = "form-control" })
+         <td style="white-space:nowrap; padding-left: 10px;"  data-toggle="tooltip" title="@item.ParentTicket.Description"  data-placement="bottom">@Html.TextBoxFor(m => Model[i].ParentTicket.Description, new { @class = "form-control" })
              @Html.HiddenFor(m => Model[i].ParentTicket.Key)
          </td>
         
@@ -102,7 +157,7 @@
                
         </tbody>
     </table>
-    <input id="submitComments" type="submit" class="btn btn-primary" style="float:right;" value="Submit All Comments" />
+    <input id="submitComments" type="submit" class="btn btn-default" style="position: fixed; bottom:2%; right:50%" value="Submit Comments" />
             }
 </div>
 
@@ -117,18 +172,27 @@
             }
 
 <script>
-$(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-    $('#connectorStatusTable').stupidtable();
-    //$('table').filterTable({ containerClass: "alert alert-warning" });
-    $('table').filterTable();
-    $('#submitComments').click(function () {
+    $(document).ready(function () {
 
-        $(this).removeClass('btn-primary')
-        $(this).addClass('btn-info');
-        $(this).prop('value', 'Submitting Comments...');
-        $('*').fadeTo(2, 0.9)
-        $('#spinner').show();
+        $('[data-toggle="tooltip"]').tooltip();
+
+        $('#connectorStatusTable').filterTable({
+            minRows: 2
+            , label: ""
+            , filterExpression: "filterTableFindAny"
+            , inputName: "searchText"
+            , containerClass: "hidden"
+        });
+
+        $('#visibleSearch').keyup(function () {
+            var filterTableSearch = $("input[name='searchText']");
+            filterTableSearch.val(this.value);
+            filterTableSearch.keyup();
+            $('.select').removeClass('active');
+        });
+
+        
     });
-});
+
+
 </script>

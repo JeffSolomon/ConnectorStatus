@@ -9,26 +9,24 @@
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
-
-    <script type="text/javascript" src="~/Scripts/stupidtable.js"></script> 
-    <script type="text/javascript" src="~/Scripts/jquery.filtertable.js"></script> 
+    <script src="~/Scripts/bindWithDelay.js"></script> 
+    <script src="~/Scripts/jquery.filtertable.js"></script> 
     <script src="~/Scripts/ConnectorStatus.js"></script>
-
+    <link href='https://fonts.googleapis.com/css?family=Maven+Pro' rel='stylesheet' type='text/css'>
+    <link id="Link2" rel="icon" href="~/favicon.ico" type="image/ico" /> 
 </head>
 <body>
     <div id="spinner" class="spinner" style="display:none;">
         <img id="img-spinner" src="~/Content/Images/ajax-loader.gif" alt="Loading" />
     </div>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse navbar-fixed-top"> 
         <div class="container">
+            <a class="navbar-brand">
+                <img alt="Brand" src="../favicon.ico" style="max-height:30px;">
+            </a>
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("Refresh", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-                @Html.ActionLink("Connector Status", "Index", "ConnectorStatus", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("REFRESH", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("CONNECTOR STATUS", "Index", "ConnectorStatus", new { area = "" }, new { @class = "navbar-brand" })
             </div>
         </div>
     </div>
@@ -36,7 +34,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>09/03/2015 - Arcadia Innovation Day</p>
+            <p>Arcadia Innovation Day</p>
         </footer>
     </div>
 

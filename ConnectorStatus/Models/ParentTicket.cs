@@ -9,9 +9,9 @@ namespace ConnectorStatus.Models
     {
         public ParentTicket()
         {
-            SubTasks = new List<ChildTicket>();
+            Stories = new List<ChildTicket>();
         }
-        public List<ChildTicket> SubTasks { get; set; }
+        public List<ChildTicket> Stories { get; set; }
 
         public string Description { get; set; }
 
@@ -19,7 +19,7 @@ namespace ConnectorStatus.Models
         {
             get
             {
-                var score = (from s in SubTasks
+                var score = (from s in Stories
                              select s.StageScore).Sum(x => (int)x);
                 System.Diagnostics.Debug.WriteLine(this.Client + "-" + this.Source + ", Score: " + score);
                 return score;        
