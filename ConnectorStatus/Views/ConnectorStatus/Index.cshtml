@@ -157,14 +157,14 @@
                
         </tbody>
     </table>
-    <input id="submitComments" type="submit" class="btn btn-default" style="position: fixed; bottom:2%; right:50%" value="Submit Comments" />
+    <input id="submitComments" type="submit" class="btn btn-success" style="position: fixed; bottom:2%; right:50%" value="Submit Comments" />
             }
 </div>
 
             }
             else
             {
-                <div class="alert alert-warning">
+                <div class="alert alert-warning" style="padding-top:20px;">
                     <p><strong>Uh oh! </strong><br />We don't have any tickets to show you! You probably entered an incorrect JIRA username or password. </p>
                 </div>
                 @Html.ActionLink("Try Again!", "Index","Home", null, new { @class = "btn btn-primary", @style = "color:white" })
