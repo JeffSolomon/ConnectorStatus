@@ -17,12 +17,11 @@ namespace ConnectorStatus.Controllers
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
         private static string BaseURL = "https://jira.arcadiasolutions.com/";
-        private static int MaxIssueCount = 1000;
-        private bool AreClosedLoaded = false;
+        private static int MaxIssueCount = 10;
 
 
         // GET: ConnectorStatus
-        public ActionResult Index(FormCollection collection, bool showClosed = false, ConnectorBuildItem.SortOrder sortOrder = ConnectorBuildItem.SortOrder.Default, bool ascending = false)
+        public ActionResult Index(FormCollection collection)
         {
 
             AllParents = new List<ParentTicket>();
@@ -42,8 +41,7 @@ namespace ConnectorStatus.Controllers
                     InitiateConnection(username, password);
                     Session["jira"] = Jira;
                     GetParents();
-
-                    GetSubTickets(showClosed);
+                    GetSubTickets();
                 }
             }
             else if (Session["builds"] != null)
@@ -51,20 +49,7 @@ namespace ConnectorStatus.Controllers
             
             Session["builds"] = FinalBuilds;
 
-            if (showClosed && !AreClosedLoaded)
-            {
-                Jira = Session["jira"] as Jira;
-                AllParents = new List<ParentTicket>();
-                foreach (var build in FinalBuilds)
-                    AllParents.Add(build.ParentTicket);
-
-                GetSubTickets(showClosed);
-            }
-
-            DisplayBuilds = FinalBuilds.Where(p => p.ParentTicket.Stories != null && p.ParentTicket.Stories.Count > 0).OrderBy(x => x.ParentTicket.Client).ToList();
-
-            if (!showClosed)
-                DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed").ToList();
+            DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed" && p.ParentTicket.Stories != null && p.ParentTicket.Stories.Count > 0).OrderBy(x => x.ParentTicket.Client).OrderBy(x => x.ParentTicket.Source).ToList();
 
             return View(DisplayBuilds);
         }
@@ -81,11 +66,8 @@ namespace ConnectorStatus.Controllers
                 key = collection.Get("[" + i + "].ParentTicket.Key");
                 i++;
                 if(key!=null && comment != null)
-                    SubmitIfDifferentComment(key, comment);
+                    SubmitCommentIfDifferent(key, comment);
             }
-            //string showClosed = collection.Get("showClosed").ToLower();
-            //bool showClosedbool = showClosed == "true" ? true : false;
-
             return RedirectToAction("Index", "ConnectorStatus",  false  );
         }
 
@@ -129,12 +111,11 @@ namespace ConnectorStatus.Controllers
             }
         }
 
-        private void GetSubTickets(bool showClosed)
+        private void GetSubTickets()
         {
             if(Jira != null)
             {
-
-                Parallel.ForEach(AllParents.Where(p => p.Stories.Count() == 0 && ((p.Status.ToLower() != "closed") || showClosed)), parent =>
+                Parallel.ForEach(AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"), parent =>
                {
                    var currentBuildItem = (from b in FinalBuilds
                                            where b.ParentTicket.Key == parent.Key
@@ -155,14 +136,13 @@ namespace ConnectorStatus.Controllers
                    }
 
                });
-                if (showClosed)
-                    AreClosedLoaded = true;
+
             }
             
 
         }
 
-        private void SubmitIfDifferentComment(string key, string comment)
+        private void SubmitCommentIfDifferent(string key, string comment)
         {
             Jira = Session["jira"] as Jira;
             if(Jira != null)
@@ -190,7 +170,6 @@ namespace ConnectorStatus.Controllers
             {
                 Key = issue.Key.ToString(),
                 Assignee = issue.Assignee,
-                //TicketType = issue["Ticket Type"] != null ? issue["Ticket Type"].ToString() : "",
                 Status = issue.Status.Name,
                 Summary = issue.Summary,
                 TicketStage = GetCustomFieldByID(issue, "11603"),
