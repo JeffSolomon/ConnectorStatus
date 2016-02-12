@@ -11,60 +11,88 @@
 
 <div class="container">
 
-    <div class="container" style="padding-top:10px;">
-        <div class="row">
-            <div class="col-md-3">
-                <input id="visibleSearch" type="search" class="form-control" placeholder="Search" />
+    <div class="panel-group" id="accordion" style="max-width:20%; position: fixed; top:40%; left:1px;">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                        SCRUM
+                    </a>
+                </h4>
             </div>
-            <div class="col-md-2">
-                <div class="panel-group">
-                    <div class="panel panel-default" style="float:left">
-                        <div class="panel-heading">
-                            <h4 class="panel-title">
-                                <a data-toggle="collapse" href="#collapseClients">CLIENTS</a>
-                            </h4>
-                        </div>
-                        <div id="collapseClients" class="panel-collapse collapse">
-                            <div class="panel-body">
-                                <div class="btn-group-vertical">
-                                    @foreach (var client in Model.Select(m => m.ParentTicket.Client).Distinct())
-                                    {
-                                        <button type="button" class="btn btn-default select" data-toggle="button" value="@client">@client</button>
-                                    }
-                                </div>
-                            </div>
-                        </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="btn-group-vertical">
+                        <button type="button" class="btn btn-default selectGroup" data-toggle="button" value="CCCN CHPW SLVTN GOBHI">North West</button>
+                        <button type="button" class="btn btn-default selectGroup" data-toggle="button" value="AHP XCLS UHG">New York</button>
+                        <button type="button" class="btn btn-default selectGroup" data-toggle="button" value="ACP AXBRO BIDCO EBNHC FDLS FHN LHCQF LVLC MEMS STW UCF VCA WCHN">Everything Else</button>
                     </div>
                 </div>
-            </div> 
-                
-            <div class="col-md-3">
-                <div class="panel-group">
-                    <!--style="max-width:20%; padding-bottom:20px; position: fixed; bottom:20%; left:1px;"-->
-                    <div class="panel panel-default" style="float:left">
-                        <div class="panel-heading">
-                            <h4 class="panel-title">
-                                <a data-toggle="collapse" href="#collapse1">LEGEND</a>
-                            </h4>
-                        </div>
-                        <div id="collapse1" class="panel-collapse collapse">
-                            <div class="panel-body">
-                                <ul class="list-group">
-                                    @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.StageColors)
-                                    {
-                                        <li class="list-group-item"><svg style="max-height:20px;max-width:25px;padding-right:5px;"><rect x="2.5" y="2.5" rx="2.5" ry="2.5" width="16" height="16" style="fill:@stage.Value;stroke:black;stroke-width:2;opacity:0.7;" /></svg>@System.Text.RegularExpressions.Regex.Replace(stage.Key.ToString(), "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 ")</li>
-                                    }
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+        </div>
+        <div class="panel panel-default"> 
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                        LEGEND
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse">
+                <div class="panel-body">
+                        @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.StageColors)
+                        {
+                            <p><svg style="max-height:20px;max-width:25px;padding-right:5px;"><rect x="2.5" y="2.5" rx="2.5" ry="2.5" width="16" height="16" style="fill:@stage.Value;stroke:black;stroke-width:2;opacity:0.7;" /></svg>@System.Text.RegularExpressions.Regex.Replace(stage.Key.ToString(), "([a-z](?=[A-Z])|[A-Z](?=[A-Z][a-z]))", "$1 ")</p>
+                        }
                 </div>
-            </div>   
+            </div>  
         </div>
     </div>
 
-
     <h2>CONNECTOR STATUS TRACKER</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <table>
+                <tbody>
+                        @{
+                            int clientNumber = 0;
+                            int numPerGroup = 8;
+                            string groupStart = "<tr>";
+                            string groupEnd = "</tr>";
+                            string panelContents = "";
+                            foreach (var client in Model.Select(m => m.ParentTicket.Client).Distinct().OrderBy(m => m))
+                            {
+                                string line = "<td><button style=\"width:100%\" type=\"button\" class=\"btn btn-default select\" data-toggle=\"button\" id=\"" + client + "\" value=\"" + client + "\">" + client + "</button></td>";
+
+                                if (clientNumber % numPerGroup == 0)
+                                {
+                                    line = groupStart + line;
+                                }
+                                if ((clientNumber % numPerGroup) == numPerGroup - 1 || clientNumber == Model.Select(m => m.ParentTicket.Client).Distinct().Count() - 1)
+                                {
+                                    line += groupEnd;
+                                }
+                                panelContents += line;
+                                clientNumber++;
+                            }
+                            @Html.Raw(panelContents);
+                        }
+                    
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-offset-8">
+            <input id="visibleSearch" type="search" class="form-control" placeholder="Search" />
+        </div>
+        
+    </div>
+    
+
+
+
+
+
+
 
 
     
@@ -78,7 +106,7 @@
         <thead>
             <tr>
     <th style="text-align:left">Contract</th>
-    <th style="text-align:left">Connector</th>
+    <th colspan="2" style="text-align:left;">Connector</th>
 
     @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.Stages)
     {
@@ -86,7 +114,7 @@
     }
             
       
-            <th>Overall Status</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -98,7 +126,8 @@
     string dt = item.ParentTicket.DueDate == null ? "" : ((DateTime)item.ParentTicket.DueDate).ToString("d");
     <tr>
         <td>@Html.DisplayFor(modelItem => item.ParentTicket.ContractID)</td>
-        <td style="white-space:nowrap; text-align:left" data-sortable="true"><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Client) - @Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
+        <td style="white-space:nowrap; text-align:left" data-sortable="true"><a href="@ticketLink" target="_blank" data-toggle="tooltip" title="@item.ParentTicket.ImplementationRound"  data-placement="bottom">@Html.DisplayFor(modelItem => item.ParentTicket.Client)</a></td>
+        <td style="white-space:nowrap; text-align:left" data-sortable="true"><a href="@ticketLink" target="_blank" data-toggle="tooltip" title="@item.ParentTicket.ImplementationRound" data-placement="bottom">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
         <!--<td><a href="@ticketLink" target="_blank">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>-->
         
         @{
@@ -189,6 +218,7 @@
             filterTableSearch.val(this.value);
             filterTableSearch.keyup();
             $('.select').removeClass('active');
+            $('.selectGroup').removeClass('active');
         });
 
         

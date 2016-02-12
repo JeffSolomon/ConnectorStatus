@@ -139,6 +139,7 @@
     </Compile>
     <Compile Include="Models\BuildProcessConfig.cs" />
     <Compile Include="Models\ChildTicket.cs" />
+    <Compile Include="Models\Logger.cs" />
     <Compile Include="Models\ParentTicket.cs" />
     <Compile Include="Models\JiraTicket.cs" />
     <Compile Include="Models\ConnectorBuildItem.cs" />

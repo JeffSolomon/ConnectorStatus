@@ -17,13 +17,12 @@ namespace ConnectorStatus.Controllers
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
         private static string BaseURL = "https://jira.arcadiasolutions.com/";
-        private static int MaxIssueCount = 10;
+        private static int MaxIssueCount = 1000;
 
 
         // GET: ConnectorStatus
         public ActionResult Index(FormCollection collection)
         {
-
             AllParents = new List<ParentTicket>();
             AllChildren = new List<ChildTicket>();
             FinalBuilds = new List<ConnectorBuildItem>();
@@ -36,6 +35,7 @@ namespace ConnectorStatus.Controllers
             {
                 username = collection.Get("username");
                 password = collection.Get("password");
+                Logger.Log("Login by " + username);
                 if (!String.IsNullOrEmpty(password))
                 {
                     InitiateConnection(username, password);
@@ -49,7 +49,13 @@ namespace ConnectorStatus.Controllers
             
             Session["builds"] = FinalBuilds;
 
-            DisplayBuilds = DisplayBuilds.Where(p => p.ParentTicket.Status.ToLower() != "closed" && p.ParentTicket.Stories != null && p.ParentTicket.Stories.Count > 0).OrderBy(x => x.ParentTicket.Client).OrderBy(x => x.ParentTicket.Source).ToList();
+            DisplayBuilds = FinalBuilds
+                            .Where(p => p.ParentTicket.Status.ToLower() != "closed" && 
+                                        p.ParentTicket.Stories != null && 
+                                        p.ParentTicket.Stories.Count > 0)
+                            .OrderBy(x => x.ParentTicket.Source)
+                            .OrderByDescending(x => x.ParentTicket.TotalScore)
+                            .OrderBy(x => x.ParentTicket.Client).ToList();
 
             return View(DisplayBuilds);
         }
@@ -84,14 +90,13 @@ namespace ConnectorStatus.Controllers
             }
         }
 
-
         private void GetParents()
         {
             if (Jira != null)
             {
                 try
                 {
-                    var issues = Jira.GetIssuesFromJql("project = AAI and type = Epic and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and createdDate >= \"2016-02-03\"");
+                    var issues = Jira.GetIssuesFromJql("project = AAI and type = Epic and status != Closed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and createdDate >= \"2016-02-03\"").ToList();
 
                     foreach (var issue in issues)
                     {
@@ -115,6 +120,11 @@ namespace ConnectorStatus.Controllers
         {
             if(Jira != null)
             {
+                System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+
+                sw.Start();
+
+
                 Parallel.ForEach(AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"), parent =>
                {
                    var currentBuildItem = (from b in FinalBuilds
@@ -136,6 +146,36 @@ namespace ConnectorStatus.Controllers
                    }
 
                });
+
+
+                //var subTickets = Jira.GetIssuesFromJql("Project = AAI and Type = Story and \"Epic Link\" is not EMPTY", 15000).ToList();
+
+                ////Parallel.ForEach(AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"), parent =>
+                //foreach(var parent in AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"))
+                //{
+                //    var currentBuildItem = (from b in FinalBuilds
+                //                            where b.ParentTicket.Key == parent.Key
+                //                            select b).First();
+                //    var stories = subTickets.Where(x => x["Epic Link"] == parent.Key);
+
+                //    foreach (var subTicket in stories)
+                //    {
+                //        ChildTicket thisChild = JiraIssueToChildIssue(subTicket);
+                //        parent.Stories.Add(thisChild);
+                //        if (!currentBuildItem.StageColors.ContainsKey(thisChild.TicketStage))
+                //            currentBuildItem.StageColors.Add(thisChild.TicketStage, thisChild);
+                //    }
+
+                //    if (parent.Stories.Count == 0)
+                //    {
+                //        FinalBuilds.Remove(currentBuildItem);
+                //    }
+
+                //}
+
+                sw.Stop();
+                System.Diagnostics.Debug.WriteLine("Elapsed={0}",sw.Elapsed);
+
 
             }
             
@@ -204,7 +244,7 @@ namespace ConnectorStatus.Controllers
 
         private string BuildStoryTicketJql(ParentTicket parentTicket)
         {
-            return "project = AAI and  \"Epic Link\" = " + parentTicket.Key;
+            return "project = AAI and type = Story and \"Customer Name\" is not EMPTY and \"Data Source Name\" is not EMPTY and \"Implementation Round\" is not EMPTY and \"Implementation Phase\" is not EMPTY and  \"Epic Link\" = " + parentTicket.Key;
         }
 
         private string GetCustomField(Issue issue, string fieldName)
@@ -215,9 +255,18 @@ namespace ConnectorStatus.Controllers
 
         private string GetCustomFieldByID(Issue issue, string ID)
         {
-            var customFieldID = "customfield_" + ID;
-            var maybeNull = issue.CustomFields.Where(c => c.Id == customFieldID);
-            return maybeNull != null ? maybeNull.FirstOrDefault().Values.FirstOrDefault().ToString() : "";
+            try
+            {
+                var customFieldID = "customfield_" + ID;
+                var maybeNull = issue.CustomFields.Where(c => c.Id == customFieldID);
+                return maybeNull != null ? maybeNull.FirstOrDefault().Values.FirstOrDefault().ToString() : "";
+            } 
+            catch(Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+                return "";
+            }
+            
         }
     }
 }

@@ -1,4 +1,14 @@
-﻿var searchByClick = function () {
+﻿function searchByMultiFilter(searchString){
+    var scrumList = searchString;
+    var selected = scrumList.split(' ');
+    var length = selected.length;
+    for (var i = 0; i < length; i++) {
+        var tag = '#' + selected[i];
+        $(tag).click();
+    }
+}
+
+var searchByClick = function () {
     
     var visibleSearch = $('#visibleSearch');
 
@@ -6,30 +16,26 @@
         visibleSearch.val('');
         visibleSearch.keyup();
     }
+
     var currentSearch = $("input[name='searchText']");
     var currentSearchTerm = currentSearch.val();
-    var newSearchTerm = this.value;
-    if (currentSearchTerm) {
-        var split = currentSearchTerm.split(' ');
-        if (split.indexOf(newSearchTerm) == -1) {
-            currentSearch.val(currentSearchTerm + ' ' + newSearchTerm);
-        }
-        else {
-            var arrayLength = split.length;
-            var searchTermAfterRemoval = '';
-            for (var i = 0; i < arrayLength; i++) {
-                if (split[i] !== newSearchTerm && split[i] !== ' ' && split[i]) {
-                    searchTermAfterRemoval = searchTermAfterRemoval + split[i] + ' ';
-                }
-                currentSearch.val(searchTermAfterRemoval);
-
-            }
-        }
+    var clicked = this.value;
+    var newSearchTerm = '';
+    var removing = (currentSearchTerm && currentSearchTerm.indexOf(clicked) >= 0);
+    if (!removing){
+        newSearchTerm += clicked + ' ';
     }
-    else {
-        currentSearch.val(newSearchTerm);
+    
+    
+    $('.select.active').each(function () {
+        newSearchTerm += this.value + ' ';
+    });
+
+    if (removing) {
+        newSearchTerm = newSearchTerm.replace(clicked + ' ', '').replace(' ' + clicked, '');
     }
 
+    currentSearch.val(newSearchTerm);
     currentSearch.keyup();
 };
 
@@ -64,6 +70,11 @@ var main = function () {
     });
 
     $('.select').click(searchByClick);
+
+    $('.selectGroup').click(function(){
+        var clickedValue = this.value;
+        searchByMultiFilter(clickedValue);
+    });
 
     
 }

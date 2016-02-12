@@ -35,7 +35,7 @@
             return function(a) {
                 var found = false;
                 $.each(args, function(j, v) {
-                    if ($(a).text().toUpperCase().indexOf(v.toUpperCase()) >= 0) {
+                    if ($(a).text().toUpperCase().indexOf(v.toUpperCase()) == 0) {//JS Only find first instance. 
                         found = true;
                         return false;
                     }
@@ -60,7 +60,7 @@
             return function(a) {
                 var found = 0; // how many terms were found?
                 $.each(args, function(j, v) {
-                    if ($(a).text().toUpperCase().indexOf(v.toUpperCase()) >= 0) {
+                    if ($(a).text().toUpperCase().indexOf(v.toUpperCase()) == 0) {
                         found++; // found another term
                     }
                 });
@@ -70,7 +70,7 @@
     } else { // build the pseudo selector for jQuery >= 1.8
         $.expr[':'].filterTableFind = jQuery.expr.createPseudo(function(arg) {
             return function(el) {
-                return $(el).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+                return $(el).text().toUpperCase().indexOf(arg.toUpperCase()) == 0;
             };
         });
         $.expr[':'].filterTableFindAny = jQuery.expr.createPseudo(function(arg) {
@@ -90,7 +90,7 @@
             return function(el) {
                 var found = false;
                 $.each(args, function(i, v) {
-                    if ($(el).text().toUpperCase().indexOf(v.toUpperCase()) >= 0) {
+                    if ($(el).text().toUpperCase().indexOf(v.toUpperCase()) == 0) {
                         found = true;
                         return false; // short-circuit the searching since this cell has one of the terms
                     }
@@ -115,7 +115,7 @@
             return function(el) {
                 var found = 0; // how many terms were found?
                 $.each(args, function(i, v) {
-                    if ($(el).text().toUpperCase().indexOf(v.toUpperCase()) >= 0) {
+                    if ($(el).text().toUpperCase().indexOf(v.toUpperCase()) == 0) {
                         found++; // found another term
                     }
                 });
