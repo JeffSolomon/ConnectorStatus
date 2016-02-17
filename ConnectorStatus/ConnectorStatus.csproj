@@ -45,7 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Atlassian.Jira, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Atlassian.SDK.4.4.0\lib\Atlassian.Jira.dll</HintPath>
+      <HintPath>..\packages\Atlassian.SDK.5.11.0\lib\Atlassian.Jira.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="JiraRestClient, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">

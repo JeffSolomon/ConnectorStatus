@@ -9,6 +9,20 @@
             An attachment associated with an issue
             </summary>
         </member>
+        <member name="M:Atlassian.Jira.Attachment.#ctor(Atlassian.Jira.Jira,Atlassian.Jira.IWebClient,Atlassian.Jira.Remote.RemoteAttachment)">
+            <summary>
+            Creates a new instance of an Attachment from a remote entity.
+            </summary>
+            <param name="jira">Object used to interact with JIRA.</param>
+            <param name="webClient">WebClient to use to download attachment.</param>
+            <param name="remoteAttachment">Remote attachment entity.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Attachment.DownloadAsync(System.String)">
+            <summary>
+            Downloads attachment to specified file.
+            </summary>
+            <param name="fullFileName">Full file name where attachment will be downloaded.</param>
+        </member>
         <member name="M:Atlassian.Jira.Attachment.Download(System.String)">
             <summary>
             Downloads attachment to specified file
@@ -50,10 +64,49 @@
             Information about an attachment to be uploaded
             </summary>
         </member>
+        <member name="T:Atlassian.Jira.CascadingSelectCustomField">
+            <summary>
+            Represents the values of a cascading select list custom field.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.CascadingSelectCustomField.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Creates a new instance of a CascadingSelectCustomField.
+            </summary>
+            <param name="name">The name of the custom field.</param>
+            <param name="parentOption">The value of the parent option.</param>
+            <param name="childOption">The value of the child option.</param>
+        </member>
+        <member name="P:Atlassian.Jira.CascadingSelectCustomField.Name">
+            <summary>
+            The name of this custom field.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.CascadingSelectCustomField.ParentOption">
+            <summary>
+            The value of the parent option.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.CascadingSelectCustomField.ChildOption">
+            <summary>
+            The value of the child option.
+            </summary>
+        </member>
         <member name="T:Atlassian.Jira.Comment">
             <summary>
             A comment associated with an issue
             </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Comment.#ctor">
+            <summary>
+            Create a new Comment.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Comment.#ctor(Atlassian.Jira.Remote.RemoteComment)">
+            <summary>
+            Create a new Comment from a remote intance object.
+            </summary>
+            <param name="remoteComment">The remote comment.</param>
         </member>
         <member name="T:Atlassian.Jira.ComparableString">
             <summary>
@@ -69,6 +122,21 @@
             Represents a named entity within JIRA. Abstracts the Version and Component used on issues
             </summary>
             <remarks>http://docs.atlassian.com/rpc-jira-plugin/latest/com/atlassian/jira/rpc/soap/beans/AbstractNamedRemoteEntity.html</remarks>
+        </member>
+        <member name="T:Atlassian.Jira.IJiraEntity">
+            <summary>
+            Representes an Jira entity with a unique identifier.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IJiraEntity.Id">
+            <summary>
+            Unique identifier for this entity.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.JiraNamedEntity.#ctor(Atlassian.Jira.Remote.AbstractNamedRemoteEntity)">
+            <summary>
+            Creates an instance of a JiraNamedEntity base on a remote entity.
+            </summary>
         </member>
         <member name="P:Atlassian.Jira.JiraNamedEntity.Id">
             <summary>
@@ -97,12 +165,108 @@
             </summary>
             <param name="values">Values to serialize as JSON.</param>
         </member>
-        <member name="T:Atlassian.Jira.IJiraRestClient">
+        <member name="T:Atlassian.Jira.IPagedQueryResult`1">
             <summary>
-            todo
+            Represents a query result for a resource that supports pagination.
             </summary>
         </member>
-        <member name="M:Atlassian.Jira.IJiraRestClient.ExecuteRequest(RestSharp.Method,System.String,System.Object)">
+        <member name="P:Atlassian.Jira.IPagedQueryResult`1.ItemsPerPage">
+            <summary>
+            The maximum number of items included on each page.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IPagedQueryResult`1.StartAt">
+            <summary>
+            The index of the first item in the paged result.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IPagedQueryResult`1.TotalItems">
+            <summary>
+            The total number of items.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.IssueLink">
+            <summary>
+            Represents a link between two issues.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IssueLink.#ctor(Atlassian.Jira.IssueLinkType,Atlassian.Jira.Issue,Atlassian.Jira.Issue)">
+            <summary>
+            Creates a new IssueLink instance.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IssueLink.InwardIssue">
+            <summary>
+            The inward issue of the link relationship.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IssueLink.LinkType">
+            <summary>
+            The type of the link relationship.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IssueLink.OutwardIssue">
+            <summary>
+            The outward issue of the link relationship.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.IssueLinkType">
+            <summary>
+            Represents an issue link type in JIRA.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.JiraNamedResource">
+            <summary>
+            Class used to deserialize a generic JIRA resource as returned by the REST API.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraNamedResource.Id">
+            <summary>
+            Identifier of this resource.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraNamedResource.Name">
+            <summary>
+            Name of this resource.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraNamedResource.Self">
+            <summary>
+            Url to access this resource.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IssueLinkType.Inward">
+            <summary>
+            Description of the 'inward' issue link relationship.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.IssueLinkType.Outward">
+            <summary>
+            Description of the 'outward' issue link relationship.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.JiraCache">
+            <summary>
+            Cache for frequently retrieved server items from JIRA.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.PagedQueryResult`1">
+            <summary>
+            PagedQueryResult that can be deserialized from default JIRA paging response.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.Remote.IJiraRestClient">
+            <summary>
+            Contract for a client that iteracts with JIRA via rest.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequest(RestSharp.IRestRequest)">
+            <summary>
+            Executes a request.
+            </summary>
+            <param name="request">Request object.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequest(RestSharp.Method,System.String,System.Object)">
             <summary>
             Executes a request and returns the response as JSON.
             </summary>
@@ -110,7 +274,24 @@
             <param name="resource">Request resource url.</param>
             <param name="requestBody">Request body to be serialized.</param>
         </member>
-        <member name="M:Atlassian.Jira.IJiraRestClient.ExecuteRequest``1(RestSharp.Method,System.String,System.Object)">
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequestAsync(RestSharp.Method,System.String,System.Object)">
+            <summary>
+            Executes an async request and returns the response as JSON.
+            </summary>
+            <param name="method">Request method.</param>
+            <param name="resource">Request resource url.</param>
+            <param name="requestBody">Request body to be serialized.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequestAsync(RestSharp.Method,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Executes an async request and returns the response as JSON.
+            </summary>
+            <param name="method">Request method.</param>
+            <param name="resource">Request resource url.</param>
+            <param name="requestBody">Request body to be serialized.</param>
+            <param name="token">Cancellation token for the operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequest``1(RestSharp.Method,System.String,System.Object)">
             <summary>
             Executes a request and serializes the response to an object.
             </summary>
@@ -119,21 +300,182 @@
             <param name="resource">Request resource url.</param>
             <param name="requestBody">Request body to be serialized.</param>
         </member>
-        <member name="M:Atlassian.Jira.IJiraRestClient.ExecuteRequest(RestSharp.IRestRequest)">
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequestAsync``1(RestSharp.Method,System.String,System.Object)">
             <summary>
-            Executes a request.
+            Executes an async request and serializes the response to an object.
             </summary>
-            <param name="request">Request object.</param>
+            <typeparam name="T">Type to serialize the reponse.</typeparam>
+            <param name="method">Request method.</param>
+            <param name="resource">Request resource url.</param>
+            <param name="requestBody">Request body to be serialized.</param>
         </member>
-        <member name="M:Atlassian.Jira.IJiraRestClient.GetTimeTrackingData(System.String)">
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteRequestAsync``1(RestSharp.Method,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            Executes an async request and serializes the response to an object.
+            </summary>
+            <typeparam name="T">Type to serialize the reponse.</typeparam>
+            <param name="method">Request method.</param>
+            <param name="resource">Request resource url.</param>
+            <param name="requestBody">Request body to be serialized.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssueAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves an issue by its key.
+            </summary>
+            <param name="issueKey">The issue key to retrieve</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.UpdateIssueAsync(Atlassian.Jira.Issue,System.Threading.CancellationToken)">
+            <summary>
+            Updates an issue and returns a new instance populated from server.
+            </summary>
+            <param name="issue">Issue to update.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.CreateIssueAsyc(Atlassian.Jira.Issue,System.Threading.CancellationToken)">
+            <summary>
+            Creates an issue and returns a new instance populated from server.
+            </summary>
+            <param name="issue">Issue to create.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.ExecuteIssueWorkflowActionAsync(Atlassian.Jira.Issue,System.String,Atlassian.Jira.WorkflowTransitionUpdates,System.Threading.CancellationToken)">
+            <summary>
+            Transition an issue through a workflow action.
+            </summary>
+            <param name="issue">Issue to transition.</param>
+            <param name="actionId">The workflow action to transition to.</param>
+            <param name="updates">Additional updates to perform when transitioning the issue.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssuesFromJqlAsync(System.String,System.Nullable{System.Int32},System.Int32)">
+            <summary>
+            Execute a specific JQL query and return the resulting issues
+            </summary>
+            <param name="jql">JQL search query</param>
+            <param name="maxIssues">Maximum number of issues to return (defaults to 50). The maximum allowable value is dictated by the JIRA property 'jira.search.views.default.max'. If you specify a value that is higher than this number, your search results will be truncated.</param>
+            <param name="startAt">Index of the first issue to return (0-based)</param>
+            <returns>Collection of Issues that match the search query</returns>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssuesFromJqlAsync(System.String,System.Nullable{System.Int32},System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Execute a specific JQL query and return the resulting issues.
+            </summary>
+            <param name="jql">JQL search query</param>
+            <param name="maxIssues">Maximum number of issues to return (defaults to 50). The maximum allowable value is dictated by the JIRA property 'jira.search.views.default.max'. If you specify a value that is higher than this number, your search results will be truncated.</param>
+            <param name="startAt">Index of the first issue to return (0-based)</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetTimeTrackingData(System.String)">
             <summary>
             Gets time tracking information for an issue.
             </summary>
             <param name="issueKey">The issue key.</param>
         </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetCustomFieldsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all custom fields within JIRA.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetFavouriteFiltersAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns the favourite filters for the user.
+            </summary>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssuePrioritiesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue priorities within JIRA.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssueResolutionsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue resolutions within JIRA
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssueStatusesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue statuses within JIRA.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssueTypesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue types within JIRA.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssueLinkTypesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all available issue link types.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.LinkIssuesAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Creates an issue link between two issues.
+            </summary>
+            <param name="outwardIssueKey">Key of the outward issue.</param>
+            <param name="inwardIssueKey">Key of the inward issue.</param>
+            <param name="linkName">Name of the issue link.</param>
+            <param name="comment">Comment to add to the outward issue.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetIssueLinksAsync(Atlassian.Jira.Issue,System.Threading.CancellationToken)">
+            <summary>
+            Returns all issue links associated with a given issue.
+            </summary>
+            <param name="issue">The issue to retrieve links for.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.AddCommentToIssueAsync(System.String,Atlassian.Jira.Comment,System.Threading.CancellationToken)">
+            <summary>
+            Adds a comment to an issue.
+            </summary>
+            <param name="issueKey">Issue key to add the comment to.</param>
+            <param name="comment">Comment object to add.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetCommentsFromIssueAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Returns the comments of an issue.
+            </summary>
+            <param name="issueKey">Issue key to retrieve comments from.</param>
+            <param name="maxComments">Maximum number of comments to retrieve.</param>
+            <param name="startAt">Index of the first comment to return (0-based).</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetActionsForIssueAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns the workflow actions that an issue can be transitioned to.
+            </summary>
+            <param name="issueKey">The issue key</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetProjectsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all projects defined in JIRA.
+            </summary>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Remote.IJiraRestClient.GetAttachmentsFromIssueAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Retrieve attachment metadata from server for this issue
+            </summary>
+            <param name="issueKye">The issue key to get attachments from.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="T:Atlassian.Jira.Remote.IJiraSoapClient">
+            <summary>
+            Contract for a client that interacts with JIRA via SOAP.
+            </summary>
+        </member>
         <member name="T:Atlassian.Jira.IssueStatus">
             <summary>
             The status of the issue as defined in JIRA
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IssueStatus.#ctor(Atlassian.Jira.Remote.AbstractNamedRemoteEntity)">
+            <summary>
+            Creates an instance of the IssueStatus based on a remote entity.
             </summary>
         </member>
         <member name="M:Atlassian.Jira.IssueStatus.op_Implicit(System.String)~Atlassian.Jira.IssueStatus">
@@ -162,6 +504,11 @@
             The resolution of the issue as defined in JIRA
             </summary>
         </member>
+        <member name="M:Atlassian.Jira.IssueResolution.#ctor(Atlassian.Jira.Remote.AbstractNamedRemoteEntity)">
+            <summary>
+            Creates an instance of the IssueResolution based on a remote entity.
+            </summary>
+        </member>
         <member name="M:Atlassian.Jira.IssueResolution.op_Implicit(System.String)~Atlassian.Jira.IssueResolution">
             <summary>
             Allows assignation by name
@@ -186,6 +533,11 @@
         <member name="T:Atlassian.Jira.IssuePriority">
             <summary>
             The priority of the issue as defined in JIRA
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IssuePriority.#ctor(Atlassian.Jira.Remote.AbstractNamedRemoteEntity)">
+            <summary>
+            Creates an instance of the IssuePriority based on a remote entity.
             </summary>
         </member>
         <member name="M:Atlassian.Jira.IssuePriority.op_Implicit(System.String)~Atlassian.Jira.IssuePriority">
@@ -253,12 +605,33 @@
             <param name="fieldName">The name of the custom field as defined in JIRA</param>
             <param name="fildValues">The values of the field</param>
         </member>
+        <member name="M:Atlassian.Jira.CustomFieldValueCollection.AddCascadingSelectField(Atlassian.Jira.CascadingSelectCustomField)">
+            <summary>
+            Add a cascading select field.
+            </summary>
+            <param name="cascadingSelectField">Cascading select field to add.</param>
+        </member>
+        <member name="M:Atlassian.Jira.CustomFieldValueCollection.AddCascadingSelectField(System.String,System.String,System.String)">
+            <summary>
+            Add a cascading select field.
+            </summary>
+            <param name="fieldName">The name of the custom field as defined in JIRA.</param>
+            <param name="parentOption">The value of the parent option.</param>
+            <param name="childOption">The value of the child option.</param>
+        </member>
         <member name="M:Atlassian.Jira.CustomFieldValueCollection.Add(System.String,System.String[])">
             <summary>
             Add a custom field by name
             </summary>
             <param name="fieldName">The name of the custom field as defined in JIRA</param>
             <param name="fieldValues">The values of the field</param>
+        </member>
+        <member name="M:Atlassian.Jira.CustomFieldValueCollection.GetCascadingSelectField(System.String)">
+            <summary>
+            Gets a cascading select custom field by name.
+            </summary>
+            <param name="fieldName">Name of the custom field as defined in JIRA.</param>
+            <returns>CascadingSelectCustomField instance if the field has been set on the issue, null otherwise</returns>
         </member>
         <member name="M:Atlassian.Jira.CustomFieldValueCollection.ForEdit">
             <summary>
@@ -288,6 +661,11 @@
         <member name="T:Atlassian.Jira.IssueType">
             <summary>
             The type of the issue as defined in JIRA
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IssueType.#ctor(Atlassian.Jira.Remote.RemoteIssueType)">
+            <summary>
+            Creates an instance of the IssuePriority based on a remote entity.
             </summary>
         </member>
         <member name="M:Atlassian.Jira.IssueType.op_Implicit(System.String)~Atlassian.Jira.IssueType">
@@ -321,9 +699,19 @@
             Holds user and password information for user that connects to JIRA.
             </summary>
         </member>
-        <member name="T:Atlassian.Jira.JiraNamedResource">
+        <member name="T:Atlassian.Jira.JiraFilter">
             <summary>
-            Class used to deserialize a generic JIRA resource as returned by the REST API.
+            Represents a JIRA filter.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraFilter.Jql">
+            <summary>
+            JQL for this filter.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraFilter.Description">
+            <summary>
+            Description for this filter.
             </summary>
         </member>
         <member name="T:Atlassian.Jira.JiraRestClientSettings">
@@ -331,24 +719,24 @@
             Settings to configure the JIRA REST client.
             </summary>
         </member>
-        <member name="T:Atlassian.Jira.Remote.RestClientSettings">
-            <summary>
-            Settings to configure a REST client.
-            </summary>
-        </member>
-        <member name="P:Atlassian.Jira.Remote.RestClientSettings.EnableRequestTrace">
-            <summary>
-            Whether to trace each request.
-            </summary>
-        </member>
         <member name="M:Atlassian.Jira.JiraRestClientSettings.#ctor">
             <summary>
             Create a new instance of the settings.
             </summary>
         </member>
+        <member name="P:Atlassian.Jira.JiraRestClientSettings.EnableRequestTrace">
+            <summary>
+            Whether to trace each request.
+            </summary>
+        </member>
         <member name="P:Atlassian.Jira.JiraRestClientSettings.CustomFieldSerializers">
             <summary>
             Dictionary of serializers for custom fields.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraRestClientSettings.Cache">
+            <summary>
+            Cache to store frequently accessed server items.
             </summary>
         </member>
         <member name="T:Atlassian.Jira.LiteralDateTime">
@@ -365,6 +753,12 @@
             <summary>
             A JIRA project
             </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Project.#ctor(Atlassian.Jira.Remote.RemoteProject)">
+            <summary>
+            Createa a new Project instance using a remote project.
+            </summary>
+            <param name="remoteProject">Remote project.</param>
         </member>
         <member name="T:Atlassian.Jira.ProjectComponent">
             <summary>
@@ -406,11 +800,81 @@
         </member>
         <member name="M:Atlassian.Jira.Issue.WorkflowTransition(System.String)">
             <summary>
-            Transition an issue through a workflow
+            Transition an issue through a workflow action.
             </summary>
-            <param name="actionName">The workflow action to transition to</param>
+            <param name="actionName">The workflow action to transition to.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.LinkToIssue(System.String,System.String,System.String)">
+            <summary>
+            Creates a link between this issue and the issue specified.
+            </summary>
+            <param name="inwardIssueKey">Key of the issue to link.</param>
+            <param name="linkName">Name of the issue link type.</param>
+            <param name="comment">Comment to add to this issue.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.LinkToIssueAsync(System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Creates a link between this issue and the issue specified.
+            </summary>
+            <param name="inwardIssueKey">Key of the issue to link.</param>
+            <param name="linkName">Name of the issue link type.</param>
+            <param name="comment">Comment to add to this issue.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetIssueLinks">
+            <summary>
+            Gets the issue links associated with this issue.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetIssueLinksAsync(System.Threading.CancellationToken)">
+            <summary>
+            Gets the issue links associated with this issue.
+            </summary>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.WorkflowTransitionAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Transition an issue through a workflow action.
+            </summary>
+            <param name="actionName">The workflow action to transition to.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.WorkflowTransitionAsync(System.String,Atlassian.Jira.WorkflowTransitionUpdates,System.Threading.CancellationToken)">
+            <summary>
+            Transition an issue through a workflow action.
+            </summary>
+            <param name="actionName">The workflow action to transition to.</param>
+            <param name="additionalUpdates">Additional updates to perform when transitioning the issue.</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetSubTaks(System.Nullable{System.Int32},System.Int32)">
+            <summary>
+            Returns the issues that are marked as sub tasks of this issue.
+            </summary>
+            <param name="maxIssues">Maximum number of issues to retrieve.</param>
+            <param name="startAt">Index of the first issue to return (0-based).</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetSubTasksAsync(System.Nullable{System.Int32},System.Int32)">
+            <summary>
+            Returns the issues that are marked as sub tasks of this issue.
+            </summary>
+            <param name="maxIssues">Maximum number of issues to retrieve.</param>
+            <param name="startAt">Index of the first issue to return (0-based).</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetSubTasksAsync(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Returns the issues that are marked as sub tasks of this issue.
+            </summary>
+            <param name="maxIssues">Maximum number of issues to retrieve.</param>
+            <param name="startAt">Index of the first issue to return (0-based).</param>
+            <param name="token">Cancellation token for this operation.</param>
         </member>
         <member name="M:Atlassian.Jira.Issue.GetAttachments">
+            <summary>
+            Retrieve attachment metadata from server for this issue
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetAttachmentsAsync(System.Threading.CancellationToken)">
             <summary>
             Retrieve attachment metadata from server for this issue
             </summary>
@@ -438,6 +902,21 @@
             Retrieve comments from server for this issue
             </summary>
         </member>
+        <member name="M:Atlassian.Jira.Issue.GetCommentsAsync(System.Nullable{System.Int32},System.Int32)">
+            <summary>
+            Get the comments for this issue.
+            </summary>
+            <param name="maxComments">Maximum number of comments to retrieve.</param>
+            <param name="startAt">Index of the first comment to return (0-based).</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetCommentsAsync(System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Get the comments for this issue.
+            </summary>
+            <param name="maxComments">Maximum number of comments to retrieve.</param>
+            <param name="startAt">Index of the first comment to return (0-based).</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
         <member name="M:Atlassian.Jira.Issue.AddComment(System.String)">
             <summary>
             Add a comment to this issue.
@@ -449,6 +928,19 @@
             Add a comment to this issue.
             </summary>
             <param name="comment">Comment object to add.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.AddCommentAsync(System.String)">
+            <summary>
+            Add a comment to this issue.
+            </summary>
+            <param name="comment">Comment text to add.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.AddCommentAsync(Atlassian.Jira.Comment,System.Threading.CancellationToken)">
+            <summary>
+            Add a comment to this issue.
+            </summary>
+            <param name="comment">Comment object to add.</param>
+            <param name="token">Cancellation token for this operation.</param>
         </member>
         <member name="M:Atlassian.Jira.Issue.AddLabels(System.String[])">
             <summary>
@@ -497,9 +989,15 @@
         </member>
         <member name="M:Atlassian.Jira.Issue.GetAvailableActions">
             <summary>
-            Gets the workflow actions that the issue can be transitioned to
+            Gets the workflow actions that the issue can be transitioned to.
             </summary>
             <returns></returns>
+        </member>
+        <member name="M:Atlassian.Jira.Issue.GetAvailableActionsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Gets the workflow actions that the issue can be transitioned to.
+            </summary>
+            <param name="token">Cancellation token for this operation.</param>
         </member>
         <member name="M:Atlassian.Jira.Issue.GetTimeTrackingData">
             <summary>
@@ -510,6 +1008,14 @@
             <summary>
             Gets the RemoteFields representing the fields that were updated
             </summary>
+        </member>
+        <member name="P:Atlassian.Jira.Issue.ParentIssueKey">
+            <summary>
+            The parent key if this issue is a subtask.
+            </summary>
+            <remarks>
+            Only available if issue was retrieved using REST API.
+            </remarks>
         </member>
         <member name="P:Atlassian.Jira.Issue.Jira">
             <summary>
@@ -596,6 +1102,15 @@
             Time and date on which this issue was last edited
             </summary>
         </member>
+        <member name="P:Atlassian.Jira.Issue.ResolutionDate">
+            <summary>
+            Time and date on which this issue was resolved.
+            </summary>
+            <remarks>
+            Only available if issue was retrieved using REST API, use GetResolutionDate
+            method for SOAP clients.
+            </remarks>
+        </member>
         <member name="P:Atlassian.Jira.Issue.Components">
             <summary>
             The components associated with this issue
@@ -623,6 +1138,26 @@
             <param name="customFieldName">Custom field name</param>
             <returns>Value of the custom field</returns>
         </member>
+        <member name="T:Atlassian.Jira.IWebClient">
+            <summary>
+            Abstracts a web client.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IWebClient.AddQueryString(System.String,System.String)">
+            <summary>
+            Adds a query string to the request
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IWebClient.Download(System.String,System.String)">
+            <summary>
+            Downloads a file from the server.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.IWebClient.DownloadAsync(System.String,System.String)">
+            <summary>
+            Downloads a file from the server.
+            </summary>
+        </member>
         <member name="T:Atlassian.Jira.Jira">
             <summary>
             Represents a JIRA server
@@ -630,13 +1165,13 @@
         </member>
         <member name="M:Atlassian.Jira.Jira.#ctor(System.String)">
             <summary>
-            Create a proxy that connects with a JIRA server with anonymous access.
+            Create a SOAP client that connects with a JIRA server with anonymous access.
             </summary>
             <param name="url">Url to the JIRA server</param>
         </member>
         <member name="M:Atlassian.Jira.Jira.#ctor(System.String,System.String,System.String)">
             <summary>
-            Create a proxy that connects with a JIRA server with specified credentials.
+            Create a SOAP client that connects with a JIRA server with specified credentials.
             </summary>
             <param name="url">Url to the JIRA server</param>
             <param name="username">Username used to authenticate</param>
@@ -644,7 +1179,7 @@
         </member>
         <member name="M:Atlassian.Jira.Jira.#ctor(System.String,System.String,System.Func{Atlassian.Jira.JiraCredentials})">
             <summary>
-            Create a proxy that connects with a JIRA server with specified access token.
+            Create a SOAP client that connects with a JIRA server with specified access token.
             </summary>
             <param name="url">Url to the JIRA server.</param>
             <param name="token">JIRA access token to use.</param>
@@ -652,15 +1187,15 @@
         </member>
         <member name="M:Atlassian.Jira.Jira.#ctor(System.String,System.String,Atlassian.Jira.JiraCredentials)">
             <summary>
-            Create a proxy that connects with a JIRA server with specified access token.
+            Create a SOAP client that connects with a JIRA server with specified access token.
             </summary>
             <param name="url">Url to the JIRA server.</param>
             <param name="token">JIRA access token to use.</param>
             <param name="credentials">Credentials used to re-generate token.</param>
         </member>
-        <member name="M:Atlassian.Jira.Jira.#ctor(Atlassian.Jira.Linq.IJqlExpressionVisitor,Atlassian.Jira.Remote.IJiraServiceClient,Atlassian.Jira.IFileSystem,Atlassian.Jira.JiraCredentials,System.String)">
+        <member name="M:Atlassian.Jira.Jira.#ctor(Atlassian.Jira.Linq.IJqlExpressionVisitor,Atlassian.Jira.Remote.IJiraSoapClient,Atlassian.Jira.IFileSystem,Atlassian.Jira.JiraCredentials,System.String,Atlassian.Jira.JiraCache)">
             <summary>
-            Create a proxy that connects with a JIRA server with specified access token and dependencies.
+            Create a client that connects with a JIRA server with specified dependencies.
             </summary>
         </member>
         <member name="M:Atlassian.Jira.Jira.CreateRestClient(System.String,System.String,System.String,Atlassian.Jira.JiraRestClientSettings)">
@@ -672,6 +1207,27 @@
             <param name="password">Password used to authenticate.</param>
             <param name="settings">Settings to configure the rest client.</param>
             <returns>Jira object configured to use REST API.</returns>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.CreateRestClient(Atlassian.Jira.Remote.IJiraClient,Atlassian.Jira.JiraCredentials,Atlassian.Jira.JiraCache)">
+            <summary>
+            Creates a JIRA client with service dependency.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.CreateSoapClient(System.String,System.String,System.String)">
+            <summary>
+            Creates a JIRA client configured to use the SOAP API.
+            </summary>
+            <param name="url">Url to the JIRA server.</param>
+            <param name="username">Username used to authenticate.</param>
+            <param name="password">Password used to authenticate.</param>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.CreateSoapClient(System.String,System.String,Atlassian.Jira.JiraCredentials)">
+            <summary>
+            Creates a JIRA client configured to use the SOAP API with specified access token.
+            </summary>
+            <param name="url">Url to the JIRA server.</param>
+            <param name="token">JIRA access token to use.</param>
+            <param name="credentials">Credentials used to re-generate token.</param>
         </member>
         <member name="M:Atlassian.Jira.Jira.GetIssue(System.String)">
             <summary>
@@ -704,6 +1260,15 @@
             <param name="startAt">Index of the first issue to return (0-based)</param>
             <returns>Collection of Issues that match the search query</returns>
         </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssuesFromJqlAsync(System.String,System.Nullable{System.Int32},System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Execute a specific JQL query and return the resulting issues.
+            </summary>
+            <param name="jql">JQL search query</param>
+            <param name="maxIssues">Maximum number of issues to return (defaults to 50). The maximum allowable value is dictated by the JIRA property 'jira.search.views.default.max'. If you specify a value that is higher than this number, your search results will be truncated.</param>
+            <param name="startAt">Index of the first issue to return (0-based)</param>
+            <param name="token">Cancellation token for this operation.</param>
+        </member>
         <member name="M:Atlassian.Jira.Jira.CreateIssue(System.String,System.String)">
             <summary>
             Returns a new issue that when saved will be created on the remote JIRA server
@@ -727,6 +1292,11 @@
             <param name="projectKey">If provided, returns issue types only for given project</param>
             <returns>Collection of JIRA issue types</returns>
         </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssueTypesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue types within JIRA.
+            </summary>
+        </member>
         <member name="M:Atlassian.Jira.Jira.GetProjectVersions(System.String)">
             <summary>
             Returns all versions defined on a JIRA project
@@ -747,11 +1317,31 @@
             </summary>
             <returns>Collection of JIRA issue priorities</returns>
         </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssuePrioritiesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue priorities within JIRA.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssueLinkTypes">
+            <summary>
+            Returns all available issue link types.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssueLinkTypesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all available issue link types.
+            </summary>
+        </member>
         <member name="M:Atlassian.Jira.Jira.GetIssueStatuses">
             <summary>
             Returns all the issue statuses within JIRA
             </summary>
             <returns>Collection of JIRA issue statuses</returns>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssueStatusesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue statuses within JIRA.
+            </summary>
         </member>
         <member name="M:Atlassian.Jira.Jira.GetIssueResolutions">
             <summary>
@@ -759,11 +1349,21 @@
             </summary>
             <returns>Collection of JIRA issue resolutions</returns>
         </member>
+        <member name="M:Atlassian.Jira.Jira.GetIssueResolutionsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all the issue resolutions within JIRA
+            </summary>
+        </member>
         <member name="M:Atlassian.Jira.Jira.GetCustomFields">
             <summary>
             Returns all custom fields within JIRA
             </summary>
             <returns>Collection of JIRA custom fields</returns>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.GetCustomFieldsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all custom fields within JIRA.
+            </summary>
         </member>
         <member name="M:Atlassian.Jira.Jira.GetFilters">
             <summary>
@@ -772,8 +1372,14 @@
         </member>
         <member name="M:Atlassian.Jira.Jira.GetProjects">
             <summary>
-            Returns all projects defined in JIRA
+            Returns all projects defined in JIRA.
             </summary>
+        </member>
+        <member name="M:Atlassian.Jira.Jira.GetProjectsAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns all projects defined in JIRA.
+            </summary>
+            <param name="token">Cancellation token for this operation.</param>
         </member>
         <member name="M:Atlassian.Jira.Jira.WithToken(System.Action{System.String})">
             <summary>
@@ -784,7 +1390,7 @@
             a new token will be requested from server and the action called again.
             </remarks>
         </member>
-        <member name="M:Atlassian.Jira.Jira.WithToken(System.Action{System.String,Atlassian.Jira.Remote.IJiraServiceClient})">
+        <member name="M:Atlassian.Jira.Jira.WithToken(System.Action{System.String,Atlassian.Jira.Remote.IJiraSoapClient})">
             <summary>
             Executes an action using the user's authentication token and the jira soap client
             </summary>
@@ -802,7 +1408,7 @@
             a new token will be requested from server and the function called again.
             </remarks>
         </member>
-        <member name="M:Atlassian.Jira.Jira.WithToken``1(System.Func{System.String,Atlassian.Jira.Remote.IJiraServiceClient,``0})">
+        <member name="M:Atlassian.Jira.Jira.WithToken``1(System.Func{System.String,Atlassian.Jira.Remote.IJiraSoapClient,``0})">
             <summary>
             Executes a function using the user's authentication token and the jira soap client
             </summary>
@@ -891,24 +1497,49 @@
             Creates a new Component from RemoteComponent
             </summary>
         </member>
-        <member name="T:Atlassian.Jira.Remote.IJiraServiceClient">
-            <summary>
-            Abstract the service client implementation.
-            </summary>
-        </member>
         <member name="T:Atlassian.Jira.Linq.IJqlExpressionVisitor">
             <summary>
             Abstracts the translation of an Expression tree into JQL
             </summary>
         </member>
-        <member name="T:Atlassian.Jira.Remote.JiraRestServiceClient">
+        <member name="T:Atlassian.Jira.JiraEntityDictionary`1">
             <summary>
-            Implements the service client contract using REST calls.
+            Dictionary of Jira entities, used to store cached values.
             </summary>
         </member>
-        <member name="M:Atlassian.Jira.Remote.JiraRestServiceClient.GetTimeTrackingData(System.String)">
+        <member name="M:Atlassian.Jira.JiraEntityDictionary`1.#ctor">
             <summary>
-            Gets time tracking information for this issue.
+            Create an empty dictionary.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.JiraEntityDictionary`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Create a dictionary and initialize it with the given entities.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.JiraEntityDictionary`1.#ctor(System.String,System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Create a dictionary with an identifier and the given entities.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.JiraEntityDictionary`1.AddIfMIssing(`0)">
+            <summary>
+            Adds an entity to the dictionary if it missing, otherwise no-op.
+            </summary>
+        </member>
+        <member name="M:Atlassian.Jira.JiraEntityDictionary`1.AddIfMIssing(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds a list of entities to the dictionary if their are missing.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.JiraEntityDictionary`1.Id">
+            <summary>
+            Unique identifier for this dictionary.
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.Remote.JiraRestClient">
+            <summary>
+            Implements the service client contract using REST calls.
             </summary>
         </member>
         <member name="T:Atlassian.Jira.Remote.RemoteComment">
@@ -1485,6 +2116,16 @@
         <member name="T:Atlassian.Jira.Remote.RemoteFieldNameAttribute">
             <summary>
             Attribute that can be applied to properties to modify the name of the remotefield used when updating an issue
+            </summary>
+        </member>
+        <member name="T:Atlassian.Jira.WorkflowTransitionUpdates">
+            <summary>
+            Additional data to update when executing a workflow transition.
+            </summary>
+        </member>
+        <member name="P:Atlassian.Jira.WorkflowTransitionUpdates.Comment">
+            <summary>
+            Comment to add to issue when executing a workflow transition.
             </summary>
         </member>
         <member name="T:Atlassian.Jira.WorkflowActions">

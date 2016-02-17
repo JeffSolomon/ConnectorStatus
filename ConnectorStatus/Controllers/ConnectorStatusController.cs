@@ -34,6 +34,7 @@ namespace ConnectorStatus.Controllers
             if (collection != null && collection.Count > 0)
             {
                 username = collection.Get("username");
+                Session["username"] = username;
                 password = collection.Get("password");
                 Logger.Log("Login by " + username);
                 if (!String.IsNullOrEmpty(password))
@@ -81,7 +82,7 @@ namespace ConnectorStatus.Controllers
         {
             try
             {
-                Jira = new Jira(BaseURL, userName, password);
+                Jira = Jira.CreateRestClient(BaseURL, userName, password);
                 Jira.MaxIssuesPerRequest = MaxIssueCount;
             }
             catch (Exception e)
@@ -96,7 +97,7 @@ namespace ConnectorStatus.Controllers
             {
                 try
                 {
-                    var issues = Jira.GetIssuesFromJql("project = AAI and type = Epic and status != Closed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and createdDate >= \"2016-02-03\"").ToList();
+                    var issues = Jira.GetIssuesFromJql("project = AAI and type = Epic and status != 190-Completed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and createdDate >= \"2016-02-03\"").ToList();
 
                     foreach (var issue in issues)
                     {
@@ -193,6 +194,7 @@ namespace ConnectorStatus.Controllers
                 if(issueInCache!=null && (issueInCache.ParentTicket.Description == null ? "" : Regex.Replace(issueInCache.ParentTicket.Description, @"\s+", "")) != Regex.Replace(comment, @"\s+", ""))
                 {
                     issue.AddComment(comment);
+                    Logger.Log(string.Format("Comment on {0} by {1}", key, Session["username"] != null ? Session["username"].ToString(): "Unknown user"));
                     if (issueInCache != null && FinalBuilds.Contains(issueInCache))
                     {
                         FinalBuilds.Remove(issueInCache);
@@ -212,7 +214,7 @@ namespace ConnectorStatus.Controllers
                 Assignee = issue.Assignee,
                 Status = issue.Status.Name,
                 Summary = issue.Summary,
-                TicketStage = GetCustomFieldByID(issue, "11603"),
+                TicketStage = GetCustomField(issue, "Implementation Phase"),
                 Client = GetCustomField(issue, "Customer Name"),
                 Source = GetCustomField(issue, "Data Source Name"),
                 ImplementationRound = GetCustomField(issue, "Implementation Round")
@@ -227,18 +229,19 @@ namespace ConnectorStatus.Controllers
                 desc = comments.OrderByDescending(c => c.CreatedDate).FirstOrDefault().Body;
             else
                 desc = issue.Description;
+
             return new ParentTicket
             {
                 Key = issue.Key.ToString(),
                 Assignee = issue.Assignee,
                 Status = issue.Status.Name.ToString(),
                 Summary = issue.Summary,
-                Client = GetCustomField(issue, "Customer Name"), 
+                Client = GetCustomField(issue, "Customer Name"),
                 Source = GetCustomField(issue, "Data Source Name"),
                 Description = desc,
                 DueDate = issue.DueDate,
                 ImplementationRound = GetCustomField(issue, "Implementation Round"),
-                ContractID = GetCustomField(issue, "Customer Contract ID")
+                ContractID = GetContractIDFromCascading(issue)
             };
         }
 
@@ -251,6 +254,21 @@ namespace ConnectorStatus.Controllers
         {
             var maybeNull = issue[fieldName];
             return maybeNull != null ? maybeNull.ToString() : "";
+        }
+
+        private string GetContractIDFromCascading(Issue issue)
+        {
+            var maybeNull = issue.CustomFields.GetCascadingSelectField("Customer Contract ID");
+            if (maybeNull != null && maybeNull.ChildOption != null)
+                return maybeNull.ChildOption.ToString();
+            else if(maybeNull != null && maybeNull.ParentOption != null)
+            {
+                var fullString = maybeNull.ParentOption.ToString();
+                if (fullString.Contains(':'))
+                    return fullString.Substring(fullString.IndexOf(':') + 1);
+                else return fullString;
+            }
+            return "";
         }
 
         private string GetCustomFieldByID(Issue issue, string ID)
