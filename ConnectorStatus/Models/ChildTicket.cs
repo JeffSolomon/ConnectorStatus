@@ -2,12 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Atlassian.Jira;
 
 namespace ConnectorStatus.Models
 {
     public class ChildTicket : JiraTicket
     {
         
+        public ChildTicket(Issue issue)
+        {
+            Key = issue.Key.ToString();
+            Assignee = issue.Assignee;
+            Status = issue.Status.Name;
+            Summary = issue.Summary;
+            TicketStage = GetCustomField(issue, "Implementation Phase");
+            Client = GetCustomField(issue, "Customer Name");
+            Source = GetCustomField(issue, "Data Source Name");
+            ImplementationRound = GetCustomField(issue, "Implementation Round");
+        }
 
         public string TicketStage { get; set; }
 

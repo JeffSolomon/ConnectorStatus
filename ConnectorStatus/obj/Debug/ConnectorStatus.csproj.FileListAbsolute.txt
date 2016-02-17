@@ -41,6 +41,6 @@ C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\System.Web.WebPages.xml
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\System.Web.WebPages.Deployment.xml
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\System.Web.WebPages.Razor.xml
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\bin\Antlr3.Runtime.pdb
+C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.csprojResolveAssemblyReference.cache
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.dll
 C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.pdb
-C:\DEV\Test\ConnectorStatus\ConnectorStatus\obj\Debug\ConnectorStatus.csprojResolveAssemblyReference.cache

@@ -46,9 +46,9 @@ namespace ConnectorStatus.Models
             { StatusCode.BackLog, "white" },
             { StatusCode.OnHoldExternal, "rgba(228,65,69,1)" },
             { StatusCode.OnHoldInternal, "rgba(228,65,69,.8)" },
-            { StatusCode.Open, "rgba(123,193,67,.7)" },
+            { StatusCode.Open, "rgba(123,193,67,.4)" },
             { StatusCode.InProgress, "rgba(123,193,67,1)" },
-            { StatusCode.Complete, "rgba(27,117,188,.7)" },
+            { StatusCode.Complete, "rgba(27,117,188,.4)" },
             { StatusCode.Closed, "rgba(27,117,188,1)" }
         };
 
