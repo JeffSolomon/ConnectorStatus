@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Atlassian.Jira;
+using System.Text.RegularExpressions;
 
 namespace ConnectorStatus.Models
 {
@@ -50,17 +51,19 @@ namespace ConnectorStatus.Models
 
         public string GetContractIDFromCascading(Issue issue)
         {
+            var returnString = "";
             var maybeNull = issue.CustomFields.GetCascadingSelectField("Customer Contract ID");
             if (maybeNull != null && maybeNull.ChildOption != null)
-                return maybeNull.ChildOption.ToString();
+                returnString = maybeNull.ChildOption.ToString();
             else if (maybeNull != null && maybeNull.ParentOption != null)
             {
                 var fullString = maybeNull.ParentOption.ToString();
                 if (fullString.Contains(':'))
-                    return fullString.Substring(fullString.IndexOf(':') + 1);
-                else return fullString;
+                    returnString = fullString.Substring(fullString.IndexOf(':') + 1);
+                else
+                    returnString = fullString;
             }
-            return "";
+            return Regex.Match(returnString, @"\d+").Value; ;
         }
 
         public string GetLatestCommentOrDescription(Issue issue, bool fallBackToDescription = true)

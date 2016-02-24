@@ -42,5 +42,6 @@ namespace ConnectorStatus.Models
                 return score;        
             }
         }
+
     }
 }

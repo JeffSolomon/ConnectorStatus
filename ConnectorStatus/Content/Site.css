@@ -91,6 +91,8 @@ th.rotate > div > span {
   text-decoration: none;
   background-color: #ddd;
   border-radius: 4px;
+  white-space: pre-wrap;      /* CSS3 */   
+   word-wrap: break-word;      /* IE */
 
 }
 

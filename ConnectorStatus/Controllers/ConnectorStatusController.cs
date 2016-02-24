@@ -130,7 +130,7 @@ namespace ConnectorStatus.Controllers
 
                 //Set up enumerable of tasks. Each returns a list of issues. 
                 IEnumerable<Task<IEnumerable<Issue>>> getStoriesQuery = from parent in epicKeys
-                                                                        select Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), MaxIssueCount, 0, System.Threading.CancellationToken.None);
+                                                                        select Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), 100, 0, System.Threading.CancellationToken.None);
                 
                 //ToList starts asynchronous calls for all tasks in enumerable. 
                 var getStoriesTasks = getStoriesQuery.ToList();
@@ -154,53 +154,6 @@ namespace ConnectorStatus.Controllers
 
                 }
 
-               // Parallel.ForEach(AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"), parent =>
-               //{
-               //    var currentBuildItem = (from b in FinalBuilds
-               //                            where b.ParentTicket.Key == parent.Key
-               //                            select b).First();
-               //    var subTickets = Jira.GetIssuesFromJql(BuildStoryTicketJql(parent), 999);
-                   
-               //    foreach (var subTicket in subTickets)
-               //    {
-               //        ChildTicket thisChild = JiraIssueToChildIssue(subTicket);
-               //        parent.Stories.Add(thisChild);
-               //        if (!currentBuildItem.StageColors.ContainsKey(thisChild.TicketStage))
-               //            currentBuildItem.StageColors.Add(thisChild.TicketStage, thisChild);
-               //    }
-
-               //    if (parent.Stories.Count == 0)
-               //    {
-               //        FinalBuilds.Remove(currentBuildItem);
-               //    }
-
-               //});
-
-
-                //var subTickets = Jira.GetIssuesFromJql("Project = AAI and Type = Story and \"Epic Link\" is not EMPTY", 15000).ToList();
-
-                ////Parallel.ForEach(AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"), parent =>
-                //foreach(var parent in AllParents.Where(p => p.Stories.Count() == 0 && p.Status.ToLower() != "closed"))
-                //{
-                //    var currentBuildItem = (from b in FinalBuilds
-                //                            where b.ParentTicket.Key == parent.Key
-                //                            select b).First();
-                //    var stories = subTickets.Where(x => x["Epic Link"] == parent.Key);
-
-                //    foreach (var subTicket in stories)
-                //    {
-                //        ChildTicket thisChild = JiraIssueToChildIssue(subTicket);
-                //        parent.Stories.Add(thisChild);
-                //        if (!currentBuildItem.StageColors.ContainsKey(thisChild.TicketStage))
-                //            currentBuildItem.StageColors.Add(thisChild.TicketStage, thisChild);
-                //    }
-
-                //    if (parent.Stories.Count == 0)
-                //    {
-                //        FinalBuilds.Remove(currentBuildItem);
-                //    }
-
-                //}
 
                 sw.Stop();
                 Debug.WriteLine("Elapsed={0}",sw.Elapsed);

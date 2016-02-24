@@ -23,9 +23,13 @@
             <div id="collapseOne" class="panel-collapse collapse">
                 <div class="panel-body">
                     <div class="btn-group-vertical">
-                        <button type="button" class="btn btn-default selectGroup" data-toggle="button" value="CCCN CHPW SLVTN GOBHI">North West</button>
-                        <button type="button" class="btn btn-default selectGroup" data-toggle="button" value="AHP XCLS UHG">New York</button>
-                        <button type="button" class="btn btn-default selectGroup" data-toggle="button" value="ACP AXBRO BIDCO EBNHC FDLS FHN LHCQF LVLC MEMS STW UCF VCA WCHN">Everything Else</button>
+                        <button type="button" class="btn btn-default filter-button-group" data-toggle="button" value="CCCN CHPW SLVTN GOBHI">North West</button>
+                        <button type="button" class="btn btn-default filter-button-group" data-toggle="button" value="AHP XCLS UHG">New York</button>
+                        <button type="button" class="btn btn-default filter-button-group" data-toggle="button" value="ACP AXBRO BIDCO EBNHC FDLS FHN LHCQF LVLC MEMS STW UCF VCA WCHN">Everything Else</button>
+                        <br />
+                        <button type="button" class="btn btn-default filter-button-status" data-toggle="button" value="build-active">Active Builds</button>
+                        <button type="button" class="btn btn-default filter-button-status" data-toggle="button" value="has-inprogress">In Progress</button>
+                        <button type="button" class="btn btn-default filter-button-status" data-toggle="button" value="has-onhold">On Hold</button>
                     </div>
                 </div>
             </div>
@@ -62,7 +66,7 @@
                             string panelContents = "";
                             foreach (var client in Model.Select(m => m.ParentTicket.Client).Distinct().OrderBy(m => m))
                             {
-                                string line = "<td><button style=\"width:100%\" type=\"button\" class=\"btn btn-default select\" data-toggle=\"button\" id=\"" + client + "\" value=\"" + client + "\">" + client + "</button></td>";
+                                string line = "<td><button style=\"width:100%\" type=\"button\" class=\"btn btn-default filter-button\" data-toggle=\"button\" id=\"" + client + "\" value=\"" + client + "\">" + client + "</button></td>";
 
                                 if (clientNumber % numPerGroup == 0)
                                 {
@@ -90,16 +94,6 @@
 
 
 
-
-
-
-
-
-    
-
-    
-    
-
 @using (Html.BeginForm("Comment", "ConnectorStatus", "", FormMethod.Post, new { @class = "form-inline" }))
 {
     <table class="table" id="connectorStatusTable">
@@ -124,7 +118,8 @@
     string ticketKey = item.ParentTicket.Key;
     string ticketLink = "https://jira.arcadiasolutions.com/browse/" + ticketKey;
     string dt = item.ParentTicket.DueDate == null ? "" : ((DateTime)item.ParentTicket.DueDate).ToString("d");
-    <tr>
+    string trClass = item.trClass;
+    <tr class="@trClass">
         <td>@Html.DisplayFor(modelItem => item.ParentTicket.ContractID)</td>
         <td style="white-space:nowrap; text-align:left" data-sortable="true"><a href="@ticketLink" target="_blank" data-toggle="tooltip" title="@item.ParentTicket.ImplementationRound"  data-placement="bottom">@Html.DisplayFor(modelItem => item.ParentTicket.Client)</a></td>
         <td style="white-space:nowrap; text-align:left" data-sortable="true"><a href="@ticketLink" target="_blank" data-toggle="tooltip" title="@item.ParentTicket.ImplementationRound" data-placement="bottom">@Html.DisplayFor(modelItem => item.ParentTicket.Source)</a></td>
@@ -136,23 +131,21 @@
                 string status = "Unknown!";
                 string color = "white";
                 string thisChildLink = "https://jira.arcadiasolutions.com/browse/";
-                ConnectorStatus.Models.BuildProcessConfig.StatusCode score = ConnectorStatus.Models.BuildProcessConfig.StatusCode.BackLog;
-                string tooltipLabel;
-                string tdType = "<td>";
+                string tooltipLabel = "";
+                string tdType = "";
                 if (stage.Value == "Environment Build" || stage.Value == "Deliver to QA")
                 { tdType = "phase-divider"; }
                 if (item.StageColors.ContainsKey(stage.Value))
                 {
                     color = item.StageColors[stage.Value].DisplayColor;
                     status = item.StageColors[stage.Value].Status;
-                    score = item.StageColors[stage.Value].StageScore;
                     thisChildLink += item.StageColors[stage.Value].Key;
-                    tooltipLabel = stage.Value + " <br><strong>" + status + "</strong>";
+                    tooltipLabel = item.StageColors[stage.Value].ToolTipLabel;
                 }
 
                 if (status == "Unknown!")
                 {
-                    <td>
+                    <td class="@tdType">
                         <div style="max-height:3px;">
                             <a href="@thisChildLink" target="_blank" data-toggle="tooltip" title="@stage.Value (Ticket Missing!)" data-placement="right">
                                 <i class="glyphicon glyphicon-exclamation-sign" style="font-size:24px;color:lightgray;padding-right:5px;vertical-align:central"></i>
@@ -164,7 +157,7 @@
                 {
                     <td class="@tdType">
                         <div style="max-height:30px;">
-                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" data-placement="bottom" data-html="true" title="@stage.Value <br> <strong>@status</strong>" data-placement="right">
+                            <a href="@thisChildLink" target="_blank" data-toggle="tooltip" data-placement="bottom" data-html="true" title="@Html.Raw(tooltipLabel)">
                             <svg width="30" height="30">
                                 <rect x="2.5" y="2.5" rx="5" ry="5" width="25" height="25" style="fill:@color;stroke:black;stroke-width:2;opacity:0.7;" />
                             </svg>
@@ -217,8 +210,9 @@
             var filterTableSearch = $("input[name='searchText']");
             filterTableSearch.val(this.value);
             filterTableSearch.keyup();
-            $('.select').removeClass('active');
-            $('.selectGroup').removeClass('active');
+            $('.filter-button').removeClass('active');
+            $('.filter-button-group').removeClass('active');
+            $('.filter-button-status').removeClass('active');
         });
 
         

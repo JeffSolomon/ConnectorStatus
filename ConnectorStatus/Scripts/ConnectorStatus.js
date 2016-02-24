@@ -1,15 +1,27 @@
-﻿function searchByMultiFilter(searchString){
-    var scrumList = searchString;
-    var selected = scrumList.split(' ');
-    var length = selected.length;
-    for (var i = 0; i < length; i++) {
-        var tag = '#' + selected[i];
-        $(tag).click();
+﻿var filterClients = new Array();
+var filterClasses = new Array();
+
+
+function filterByArray(array) {
+    if (array.length > 0) {
+        $('#connectorStatusTable > tbody > tr').each(function () {
+            var found = false;
+            for (var i = 0; i < array.length; i++) {
+                if ($(this).hasClass(array[i])) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                $(this).hide();
+            }
+
+        });
     }
 }
 
-var searchByClick = function () {
-    
+function filterByClass() {
+
     var visibleSearch = $('#visibleSearch');
 
     if (visibleSearch.val() !== '') {//if someone entered manual search, clear it. 
@@ -17,27 +29,30 @@ var searchByClick = function () {
         visibleSearch.keyup();
     }
 
-    var currentSearch = $("input[name='searchText']");
-    var currentSearchTerm = currentSearch.val();
-    var clicked = this.value;
-    var newSearchTerm = '';
-    var removing = (currentSearchTerm && currentSearchTerm.indexOf(clicked) >= 0);
-    if (!removing){
-        newSearchTerm += clicked + ' ';
-    }
-    
-    
-    $('.select.active').each(function () {
-        newSearchTerm += this.value + ' ';
-    });
+    $('#connectorStatusTable > tbody > tr').show();
 
-    if (removing) {
-        newSearchTerm = newSearchTerm.replace(clicked + ' ', '').replace(' ' + clicked, '');
-    }
+    filterByArray(filterClasses);
+    filterByArray(filterClients);
 
-    currentSearch.val(newSearchTerm);
-    currentSearch.keyup();
-};
+}
+
+function searchByMultiFilter(searchString, enableSelect) {
+    var scrumList = searchString;
+    var selected = scrumList.split(' ');
+    var length = selected.length;
+    for (var i = 0; i < length; i++) {
+        var tag = '#' + selected[i];
+        if (enableSelect) {
+            $(tag).removeClass('active');
+            $(tag).click();
+        } else {
+            $(tag).addClass('active');
+            $(tag).click();
+        }
+        
+    }
+}
+
 
 var main = function () {
 
@@ -60,22 +75,37 @@ var main = function () {
     });
 
 
-    $('#submitComments').click(function () {
+    $('.filter-button').click(function () {
+        if (filterClients.indexOf(this.value) >= 0) {
+            filterClients.splice(filterClients.indexOf(this.value), 1);
+        } else {
+            filterClients.push(this.value);
+        }
 
-        $(this).removeClass('btn-primary')
-        $(this).addClass('btn-info');
-        $(this).prop('value', 'Submitting Comments...');
-        $('*').fadeTo(2, 0.9)
-        $('#spinner').show();
+        filterByClass();
     });
 
-    $('.select').click(searchByClick);
+    $('.filter-button-status').click(function () {
 
-    $('.selectGroup').click(function(){
+        if (filterClasses.indexOf(this.value) >= 0) {
+            filterClasses.splice(filterClasses.indexOf(this.value), 1);
+        } else {
+            filterClasses.push(this.value);
+        }
+
+        filterByClass();
+
+    });
+
+    $('.filter-button-group').click(function () {
         var clickedValue = this.value;
-        searchByMultiFilter(clickedValue);
+        var enableSelect = !$(this).hasClass('active');
+        searchByMultiFilter(clickedValue, enableSelect);
     });
 
+    
+
+    
     
 }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Atlassian.Jira;
+using System.Net;
 
 namespace ConnectorStatus.Models
 {
@@ -19,20 +20,21 @@ namespace ConnectorStatus.Models
             Client = GetCustomField(issue, "Customer Name");
             Source = GetCustomField(issue, "Data Source Name");
             ImplementationRound = GetCustomField(issue, "Implementation Round");
+            Description = Status == "Open" || Status == "In Progress" || Status.StartsWith("On Hold") ? GetLatestCommentOrDescription(issue, false) : "";
         }
 
         public string TicketStage { get; set; }
 
-        public BuildProcessConfig.StatusCode StageScore
+        public int StageScore
         {
             get
             {
                 foreach(BuildProcessConfig.StatusCode status in Enum.GetValues(typeof(BuildProcessConfig.StatusCode)))
                 {
                     if (this.Status.ToLower().Replace(" ", "").Replace("-","") == status.ToString().ToLower())
-                        return status;
+                        return (int)status;
                 }
-                return BuildProcessConfig.StatusCode.BackLog;
+                return (int)BuildProcessConfig.StatusCode.BackLog;
             }
         } 
                 
@@ -40,13 +42,41 @@ namespace ConnectorStatus.Models
         {
             get
             {
-                string color = BuildProcessConfig.StageColors[StageScore];
+                string color = BuildProcessConfig.StageColors[(BuildProcessConfig.StatusCode)StageScore];
 
                 if (string.IsNullOrEmpty(color))
                     color = BuildProcessConfig.StageColors[BuildProcessConfig.StatusCode.BackLog];
 
                 return color;
             }
+        }
+
+        public string ToolTipLabel
+        {
+            get
+            {
+                return  TicketStage +
+                    "<br><strong>" +
+                    Status + "</strong>" +
+                    (!string.IsNullOrEmpty(Description) ? "<br><br><p style='text-align:left'><strong>Last Comment:</strong><br><i>" + WebUtility.HtmlEncode(Description) + "</i></p>": "");
+            }
+        }
+
+        new public string GetLatestCommentOrDescription(Issue issue, bool fallBackToDescription = true)
+        {
+            var comments = issue.GetComments();
+            
+            string comment = "";
+            if (comments != null && comments.Count > 0)
+            {
+                var fullComment = comments.OrderByDescending(c => c.CreatedDate).FirstOrDefault();
+                comment = fullComment.Body + "<br><br>" + fullComment.Author + " - " + (fullComment.CreatedDate != null ? ((DateTime)fullComment.CreatedDate).ToString("d") : "");
+            }
+            
+            else if (fallBackToDescription)
+                comment = issue.Description;
+
+            return comment;
         }
     }
 }
