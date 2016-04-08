@@ -22,7 +22,8 @@ namespace ConnectorStatus.Models
                 return ParentTicket.Client
                     + (ConnectorBuildInProgress ? " build-active" : " build-inactive")
                     + (AnythingInProgress ? " has-inprogress" : " nothing-inprogress")
-                    + (AnythingOnHold ? " has-onhold": " nothing-onhold");
+                    + (AnythingOnHold ? " has-onhold": " nothing-onhold")
+                    + (InDevelopment ? " in-dev": " not-in-dev");
             }
         }
 
@@ -63,6 +64,26 @@ namespace ConnectorStatus.Models
                 return onHoldTickets != null && onHoldTickets.Count() > 0;
             }
         }
+
+        public bool InDevelopment
+        {
+            get
+            {
+                var deliverToQAStage = BuildProcessConfig.Stages.Where(x => x.Value == "Deliver to QA").Select(x => x.Key).FirstOrDefault();
+                var ETLStage = BuildProcessConfig.Stages.Where(x => x.Value == "Extract and Load").Select(x => x.Key).FirstOrDefault();
+
+                foreach (var stage in BuildProcessConfig.Stages.Where(x => x.Key <= deliverToQAStage && x.Key >= ETLStage))
+                {
+                    int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
+                    if (stageScore == (int)BuildProcessConfig.StatusCode.Open || stageScore == (int)BuildProcessConfig.StatusCode.InProgress)
+                        return true;
+                }
+
+                return false;
+
+            }
+        }
+
 
     }
 

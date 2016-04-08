@@ -27,6 +27,7 @@ namespace ConnectorStatus.Models
             DueDate = issue.DueDate;
             ImplementationRound = GetCustomField(issue, "Implementation Round");
             ContractID = GetContractIDFromCascading(issue);
+            WorkLogs = GetWorklogs(issue);
         } 
 
 

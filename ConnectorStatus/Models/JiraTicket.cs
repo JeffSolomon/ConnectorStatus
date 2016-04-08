@@ -25,6 +25,7 @@ namespace ConnectorStatus.Models
         public string Description { get; set; }
         public string ContractID { get; set; }
 
+        public List<EffortLog> WorkLogs { get; set; }
 
         //Methods
         public string GetCustomField(Issue issue, string fieldName)
@@ -77,5 +78,51 @@ namespace ConnectorStatus.Models
 
             return comment;
         }
+
+        public double GetHoursLogged(DateTime? start = null, DateTime? end = null)
+        {
+
+            if (start == null)
+                start = new DateTime(2015, 1, 1);
+            if (end == null)
+                end = DateTime.Now;
+
+            if(WorkLogs != null && WorkLogs.Count > 0)
+            {
+                return WorkLogs.Where(l => (l.StartDate >= start && l.StartDate <= end) || l.StartDate == null).Select(l => l.Hours).Sum();
+            }
+            return 0;
+            
+        }
+
+        public List<EffortLog> GetWorklogs(Issue issue)
+        {
+            var workLogs = new List<EffortLog>();
+
+            var rawWorklogs = issue.GetWorklogs().ToList();
+
+            foreach(var wl in rawWorklogs)
+            {
+                workLogs.Add(
+                new EffortLog
+                {
+                    StartDate = wl.StartDate,
+                    TimeSpent = wl.TimeSpent,
+                    Hours = wl.TimeSpentInSeconds / 3600.0
+
+                });
+            }
+            return workLogs;
+        }
+
+        public class EffortLog
+        {
+            public DateTime? StartDate { get; set; }
+            public string TimeSpent { get; set;  }
+            public double Hours { get; set;  }
+        }
+
+
+
     }
 }

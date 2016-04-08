@@ -20,6 +20,8 @@ namespace ConnectorStatus.Controllers
         private static string BaseURL = "https://jira.arcadiasolutions.com/";
         private static string EpicJQLQuery = "project = AAI and type = Epic and status != 190-Completed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and createdDate >= \"2016-02-03\"";
         private static string StoryJQLQueryBase = "project = AAI and type = Story and \"Customer Name\" is not EMPTY and \"Data Source Name\" is not EMPTY and \"Implementation Round\" is not EMPTY and \"Implementation Phase\" is not EMPTY and  \"Epic Link\" = ";
+        private static string UpdatedTicketsQuery = "project = AAI and type in(Epic, Story, Sub-task) and status != 190-Completed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and (updatedDate >= \"{0}\" or worklogDate >= \"{0}\")";
+
         private static int MaxIssueCount = 1000;
         
         // GET: ConnectorStatus
@@ -32,25 +34,45 @@ namespace ConnectorStatus.Controllers
 
             string username;
             string password;
+            var currentDateTime = DateTime.Now;
 
             if (collection != null && collection.Count > 0)
             {
                 username = collection.Get("username");
                 Session["username"] = username;
                 password = collection.Get("password");
-                Logger.Log("Login by " + username);
+                FileWriter.Log("Login by " + username);
                 if (!String.IsNullOrEmpty(password))
                 {
-                    InitiateConnection(username, password);
-                    Session["jira"] = Jira;
-                    GetParents();
-                    await GetSubTickets();
+                    if(InitiateConnection(username, password))
+                    {
+                        Session["jira"] = Jira;
+                        var fromFile = FileWriter.ReadJsonFile();
+                        if(fromFile == null)
+                        {
+                            GetParents();
+                            await GetSubTickets();
+                        }
+                        else
+                        {
+                            FinalBuilds = fromFile;
+                            AllParents = FinalBuilds.Select(x => x.ParentTicket).ToList();
+                            GetAndApplyUpdates();
+                            await GetSubTickets();
+                        }
+                        FileWriter.WriteLastUpdateTime(currentDateTime);
+                    }
+                    
                 }
             }
-            else if (Session["builds"] != null)
-                FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;
-            
-            Session["builds"] = FinalBuilds;
+            //else if (Session["builds"] != null)
+            //    FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;            
+            else if ((bool)Session["SuccessfulLogin"] && FileWriter.ReadJsonFile() != null)
+                FinalBuilds = FileWriter.ReadJsonFile();
+
+
+            //Session["builds"] = FinalBuilds;
+            FileWriter.WriteJsonFile(FinalBuilds);
 
             DisplayBuilds = FinalBuilds
                             .Where(p => p.ParentTicket.Stories != null && 
@@ -79,17 +101,23 @@ namespace ConnectorStatus.Controllers
             return RedirectToAction("Index", "ConnectorStatus",  false  );
         }
 
-        private void InitiateConnection(string userName, string password)
+        private bool InitiateConnection(string userName, string password)
         {
+            bool success = true;
             try
             {
                 Jira = Jira.CreateRestClient(BaseURL, userName, password);
                 Jira.MaxIssuesPerRequest = MaxIssueCount;
+                var testQueryResult = Jira.GetIssue("AAI-1");
+                success = testQueryResult != null;
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
+                success = false;
             }
+            Session["SuccessfulLogin"] = success;
+            return success;
         }
 
         private void GetParents()
@@ -117,6 +145,71 @@ namespace ConnectorStatus.Controllers
 
             }
         }
+
+        private void GetAndApplyUpdates()
+        {
+            var lastUpdateTime = FileWriter.GetLastUpdateTime();
+            if (lastUpdateTime == null)
+                lastUpdateTime = "2016-01-01";
+
+
+            if(Jira != null)
+            {
+                try
+                {
+                    var jqlQuery = string.Format(UpdatedTicketsQuery, lastUpdateTime);
+                    var updatedIssues = Jira.GetIssuesFromJql(jqlQuery).ToList();
+                    foreach(var issue in updatedIssues.Where(x => x.Type.Name == "Epic"))
+                    {
+                        var ticketToUpdate = FinalBuilds.Where(x => x.ParentTicket.Key == issue.Key.ToString()).Select(x => x.ParentTicket).FirstOrDefault();
+                        if(ticketToUpdate != null)
+                        {
+                            ticketToUpdate = new ParentTicket(issue);
+                        }
+                        else
+                        {
+                            AllParents.Add(new ParentTicket(issue));
+                        }
+                    }
+
+                    foreach (var issue in updatedIssues.Where(x => x.Type.Name == "Story"))
+                    {
+                        ChildTicket ticketToUpdate = null;
+                        var epicLink = issue["Epic Link"].ToString();
+                        var stagesForThisEpic = FinalBuilds.Where(x => x.ParentTicket.Key == epicLink).Select(x => x.StageColors.Values).FirstOrDefault();
+                        if (stagesForThisEpic != null)
+                            ticketToUpdate = stagesForThisEpic.Where(x => x.Key == issue.Key.ToString()).FirstOrDefault();
+
+                        if (ticketToUpdate != null)
+                        {
+                            ticketToUpdate = new ChildTicket(issue);
+                        }
+                    }
+
+                    foreach (var issue in updatedIssues.Where(x => x.Type.IsSubTask))
+                    {
+                        ChildTicket ticketToUpdate = null;
+                        var epicLink = issue["Epic Link"].ToString();
+                        var stagesForThisEpic = FinalBuilds.Where(x => x.ParentTicket.Key == epicLink).Select(x => x.StageColors.Values).FirstOrDefault();
+                        if (stagesForThisEpic != null)
+                            ticketToUpdate = stagesForThisEpic.Where(x => x.Key == issue.ParentIssueKey.ToString()).FirstOrDefault();
+
+                        if (ticketToUpdate != null)
+                        {
+                            var story = Jira.GetIssue(issue.ParentIssueKey);
+                            if(story != null)
+                                ticketToUpdate = new ChildTicket(story);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                }
+            }
+        }
+
 
         async Task GetSubTickets()
         {
@@ -149,7 +242,7 @@ namespace ConnectorStatus.Controllers
                     }
                     catch(Exception e)
                     {
-                        Logger.Log("[ERROR] ---- " + e.Message);
+                        FileWriter.Log("[ERROR] ---- " + e.Message);
                     }
 
                 }
@@ -193,7 +286,7 @@ namespace ConnectorStatus.Controllers
                 if(issueInCache!=null && (issueInCache.ParentTicket.Description == null ? "" : Regex.Replace(issueInCache.ParentTicket.Description, @"\s+", "")) != Regex.Replace(comment, @"\s+", ""))
                 {
                     issue.AddComment(comment);
-                    Logger.Log(string.Format("Comment on {0} by {1}", key, Session["username"] != null ? Session["username"].ToString(): "Unknown user"));
+                    FileWriter.Log(string.Format("Comment on {0} by {1}", key, Session["username"] != null ? Session["username"].ToString(): "Unknown user"));
                     if (issueInCache != null && FinalBuilds.Contains(issueInCache))
                     {
                         FinalBuilds.Remove(issueInCache);

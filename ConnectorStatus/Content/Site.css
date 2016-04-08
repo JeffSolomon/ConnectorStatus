@@ -113,3 +113,10 @@ th.rotate > div > span {
     border-right: 1px dotted #ddd;
 }
 
+
+
+
+.nvd3Chart svg {
+        height: 500px;
+        width: 1000px;
+}

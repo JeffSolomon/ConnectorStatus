@@ -134,12 +134,13 @@
     <Compile Include="Controllers\CommentController.cs" />
     <Compile Include="Controllers\ConnectorStatusController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\WorkLogsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\BuildProcessConfig.cs" />
     <Compile Include="Models\ChildTicket.cs" />
-    <Compile Include="Models\Logger.cs" />
+    <Compile Include="Models\FileWriter.cs" />
     <Compile Include="Models\ParentTicket.cs" />
     <Compile Include="Models\JiraTicket.cs" />
     <Compile Include="Models\ConnectorBuildItem.cs" />
@@ -171,7 +172,12 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\LoadWorkLog.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\nv.d3.css" />
+    <Content Include="Scripts\nv.d3.js" />
+    <Content Include="Scripts\nv.d3.min.css" />
+    <Content Include="Scripts\nv.d3.min.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\stupidtable.js" />
@@ -192,6 +198,10 @@
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\ConnectorStatus\Index.cshtml" />
+    <Content Include="Views\WorkLogs\Index.cshtml" />
+    <Content Include="Scripts\nv.d3.min.css.map" />
+    <Content Include="Scripts\nv.d3.min.js.map" />
+    <Content Include="Views\Shared\_LayoutHome.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

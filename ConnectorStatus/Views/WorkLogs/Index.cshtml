@@ -1,0 +1,32 @@
+﻿
+@{
+    ViewBag.Title = "WorkLogs";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="~/Scripts/nv.d3.js"></script>
+<script src="~/Scripts/LoadWorkLog.js"></script>
+<h2>WorkLogs</h2>
+
+<div id="no-data-warning" class="alert alert-warning" style="padding-top:20px;">
+    <p><strong>Uh oh! </strong><br />This page is only available once you've logged in to Jira to refresh the tickets.</p>
+</div>
+
+
+<div class="container">
+    <form class="form-inline">
+        <div class="form-group">
+            <input id="start-date" type="text" class="form-control date-input" placeholder="Start Date">
+        </div>
+        <div class="form-group">
+            <input id="end-date" type="text" class="form-control date-input" placeholder="End Date">
+        </div>
+        <button type="button" id="GetData" class="btn btn-primary">Get Data!</button>
+    </form>
+    <div id="chart" class="nvd3Chart">
+        <svg></svg>
+    </div>
+</div>
+
+
+

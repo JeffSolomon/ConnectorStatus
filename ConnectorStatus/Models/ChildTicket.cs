@@ -21,7 +21,10 @@ namespace ConnectorStatus.Models
             Source = GetCustomField(issue, "Data Source Name");
             ImplementationRound = GetCustomField(issue, "Implementation Round");
             Description = Status == "Open" || Status == "In Progress" || Status.StartsWith("On Hold") ? GetLatestCommentOrDescription(issue, false) : "";
+            WorkLogs = GetWorklogs(issue);
         }
+
+        public ChildTicket() { }
 
         public string TicketStage { get; set; }
 
