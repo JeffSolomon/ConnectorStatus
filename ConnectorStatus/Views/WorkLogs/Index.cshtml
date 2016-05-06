@@ -3,30 +3,81 @@
     ViewBag.Title = "WorkLogs";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+ <!-- Compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="~/Scripts/nv.d3.js"></script>
+<link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.8.1/build/nv.d3.css" />
 <script src="~/Scripts/LoadWorkLog.js"></script>
-<h2>WorkLogs</h2>
 
 <div id="no-data-warning" class="alert alert-warning" style="padding-top:20px;">
     <p><strong>Uh oh! </strong><br />This page is only available once you've logged in to Jira to refresh the tickets.</p>
 </div>
+    <div id="chart1" class="nvd3Chart">
+        <div class="card">
+            <div class="card-action">
+                <span class="card-title">Client-Stage Effort</span>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <input id="start-date" type="text" class="form-control date-input" placeholder="Start Date">
+                    </div>
+                    <div class="form-group">
+                        <input id="end-date" type="text" class="form-control date-input" placeholder="End Date">
+                    </div>
+                    <button type="button" id="GetData" class="waves-effect waves-light btn blue-grey lighten-3">Get Data!</button>
+                </form>
+            </div>
+            <div class="card-content">
+                <div id="chart1Spinner" class="preloader-wrapper big active">
+                    <div class="valign-wrapper center-align" >
+                        <div class="spinner-layer spinner-blue-only">
+                            <div class="circle-clipper left">
+                                <div class="circle"></div>
+                            </div><div class="gap-patch">
+                                <div class="circle"></div>
+                            </div><div class="circle-clipper right">
+                                <div class="circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="chart1chart" class="chartContainer">
+                    <svg></svg>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
-<div class="container">
-    <form class="form-inline">
-        <div class="form-group">
-            <input id="start-date" type="text" class="form-control date-input" placeholder="Start Date">
+<div id="chart2" class="nvd3Chart">
+    <div class="card">
+        <div class="card-action">
+            <span class="card-title">Effort v Duration</span>
         </div>
-        <div class="form-group">
-            <input id="end-date" type="text" class="form-control date-input" placeholder="End Date">
+        <div class="card-content">
+            <div id="chart2Spinner" class="preloader-wrapper big active">
+                <div class="valign-wrapper center-align">
+                    <div class="spinner-layer spinner-blue-only">
+                        <div class="circle-clipper left">
+                            <div class="circle"></div>
+                        </div><div class="gap-patch">
+                            <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="chart2chart" class="chartContainer">
+                <svg></svg>
+            </div>
         </div>
-        <button type="button" id="GetData" class="btn btn-primary">Get Data!</button>
-    </form>
-    <div id="chart" class="nvd3Chart">
-        <svg></svg>
     </div>
 </div>
+    
 
 
 

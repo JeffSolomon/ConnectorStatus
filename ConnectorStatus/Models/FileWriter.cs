@@ -124,7 +124,7 @@ namespace ConnectorStatus.Models
                 {
                     using (var sw = new StreamWriter(FilePath))
                     {
-                        sw.Write(datetime.ToString("yyyy-MM-dd"));
+                        sw.Write(datetime.ToString("yyyy-MM-dd HH:mm"));
                     }
                 }
                 catch (Exception e)

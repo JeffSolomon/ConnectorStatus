@@ -33,11 +33,10 @@ namespace ConnectorStatus.Controllers
             if (endDate != null)
             {
                 DateTime st;
-                DateTime.TryParse(startDate, out st);
+                DateTime.TryParse(endDate, out st);
                 if (st.Year > 1)
-                    start = st;
+                    end = st;
             }
-
 
             List<LogGroup> workLogGroups = new List<LogGroup>();
             List<ChildTicket> allChildren = new List<ChildTicket>();
@@ -94,6 +93,48 @@ namespace ConnectorStatus.Controllers
                 return Json("");
         }
 
+        [HttpPost]
+        public ActionResult GetTicketEffortAndDuration()
+        {
+            List<ChildTicket> allChildren = new List<ChildTicket>();
+            List<ParentTicket> allParents = new List<ParentTicket>();
+
+            if ((bool)Session["SuccessfulLogin"] && FileWriter.ReadJsonFile() != null)
+            {
+                var builds = FileWriter.ReadJsonFile();
+
+                foreach (var build in builds)
+                {
+                    allChildren.AddRange(build.StageColors.Select(x => x.Value));
+                    allParents.Add(build.ParentTicket);
+                }
+
+
+                var tickets = allChildren.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = BuildProcessConfig.Stages.Where(y => y.Value == x.TicketStage).Select(z => z.Key).FirstOrDefault()})
+                                         .Where(x => x.Duration > 0)
+                                         .ToList();
+
+                var parentTickets = allParents.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = 0 })
+                                                .Where(x => x.Duration > 0)
+                                                .ToList();
+                tickets.AddRange(parentTickets);
+
+                List<BubbleGroup> groups = new List<BubbleGroup>();
+                foreach(var ticket in tickets)
+                {
+                    var exists = groups.Where(x => x.key == ticket.Key).FirstOrDefault();
+                    if (exists == null)
+                        groups.Add(new BubbleGroup { key = ticket.Key, values = new List<BubbleData>() });
+                    else
+                        exists.values.Add(new BubbleData { x = ticket.Stage, y = ticket.Duration, size = ticket.Effort });
+                }
+
+                var workLogJson = Json(groups);
+                return workLogJson;
+            }
+
+            return Json("");
+        }
 
         class LogGroup
         {
@@ -104,6 +145,20 @@ namespace ConnectorStatus.Controllers
         {
             public string stage { get; set; }
             public decimal hours { get; set; }
+        }
+
+        class BubbleGroup
+        {
+            public string key { get; set; }
+            public List<BubbleData> values { get; set; }
+
+        }
+
+        class BubbleData
+        {
+            public double x { get; set; }
+            public double y { get; set; }
+            public double size { get; set; }
         }
 
       

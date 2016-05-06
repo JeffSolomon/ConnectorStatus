@@ -15,12 +15,30 @@ namespace ConnectorStatus.Controllers
     {
         private List<ParentTicket> AllParents;
         private List<ChildTicket> AllChildren;
+        private List<string> ChildrenWithWorkLogged;
         private List<ConnectorBuildItem> FinalBuilds;
         private Jira Jira;
+
         private static string BaseURL = "https://jira.arcadiasolutions.com/";
-        private static string EpicJQLQuery = "project = AAI and type = Epic and status != 190-Completed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and createdDate >= \"2016-02-03\"";
-        private static string StoryJQLQueryBase = "project = AAI and type = Story and \"Customer Name\" is not EMPTY and \"Data Source Name\" is not EMPTY and \"Implementation Round\" is not EMPTY and \"Implementation Phase\" is not EMPTY and  \"Epic Link\" = ";
-        private static string UpdatedTicketsQuery = "project = AAI and type in(Epic, Story, Sub-task) and status != 190-Completed and \"Data Source Name\" is not EMPTY and \"Customer Name\" is not empty and (updatedDate >= \"{0}\" or worklogDate >= \"{0}\")";
+
+        private static string EpicJQLQuery = "project = AAI and type = Epic and status != 190-Completed " +
+                                             "and \"Data Source Name\" is not EMPTY and \"Customer Name\"" +
+                                             "is not empty and createdDate >= \"2016-02-03\"";
+
+        private static string WorkLoggedJQLQuery = "project = AAI and type in (Story) and worklogDate >= \"2016-01-01\"";
+
+        private static string StoryJQLQueryBase = "project = AAI and type = Story and \"Customer Name\" " + 
+                                                   "is not EMPTY and \"Data Source Name\" is not EMPTY and " + 
+                                                   "\"Implementation Round\" is not EMPTY and " +
+                                                   "\"Implementation Phase\" is not EMPTY " + 
+                                                   "and  \"Epic Link\" = ";
+
+        private static string SubtaskJQLQueryBase = "project = AAI and type = Sub-task and worklogDate >= \"2016-01-01\" and parent = ";
+
+        private static string UpdatedTicketsQuery = "project = AAI and type in(Epic, Story, Sub-task) and " + 
+                                                    "status != 190-Completed and \"Data Source Name\" is not EMPTY " +
+                                                    "and \"Customer Name\" is not empty and ((updatedDate >= \"{0}\" and type in(Epic, Story)) " + 
+                                                    "or worklogDate >= \"{1}\")";
 
         private static int MaxIssueCount = 1000;
         
@@ -29,6 +47,7 @@ namespace ConnectorStatus.Controllers
         {
             AllParents = new List<ParentTicket>();
             AllChildren = new List<ChildTicket>();
+            ChildrenWithWorkLogged = new List<string>();
             FinalBuilds = new List<ConnectorBuildItem>();
             var DisplayBuilds = new List<ConnectorBuildItem>();
 
@@ -50,15 +69,22 @@ namespace ConnectorStatus.Controllers
                         var fromFile = FileWriter.ReadJsonFile();
                         if(fromFile == null)
                         {
+                            Debug.WriteLine(DateTime.Now + " : --- Start getting parents.");
                             GetParents();
-                            await GetSubTickets();
+                            Debug.WriteLine(DateTime.Now + " : --- Start getting tickets with worklogs.");
+                            GetTicketsWithWorkLogs();
+                            Debug.WriteLine(DateTime.Now + " : --- Start getting stories.");
+                            await GetStories();
                         }
                         else
                         {
                             FinalBuilds = fromFile;
-                            AllParents = FinalBuilds.Select(x => x.ParentTicket).ToList();
+                            foreach (var build in FinalBuilds) //Reload lists.
+                            {
+                                AllChildren.AddRange(build.StageColors.Select(x => x.Value));
+                                AllParents.Add(build.ParentTicket);
+                            }
                             GetAndApplyUpdates();
-                            await GetSubTickets();
                         }
                         FileWriter.WriteLastUpdateTime(currentDateTime);
                     }
@@ -146,60 +172,105 @@ namespace ConnectorStatus.Controllers
             }
         }
 
+        private void GetTicketsWithWorkLogs()
+        {
+            if (Jira != null)
+            {
+                try
+                {
+                    var issues = Jira.GetIssuesFromJql(WorkLoggedJQLQuery).ToList();
+
+                    foreach (var issue in issues)
+                        ChildrenWithWorkLogged.Add(issue.Key.ToString());
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                }
+
+            }
+        }
+
         private void GetAndApplyUpdates()
         {
             var lastUpdateTime = FileWriter.GetLastUpdateTime();
             if (lastUpdateTime == null)
-                lastUpdateTime = "2016-01-01";
-
+                lastUpdateTime = "2016-01-01 00:00:00";
 
             if(Jira != null)
             {
                 try
                 {
-                    var jqlQuery = string.Format(UpdatedTicketsQuery, lastUpdateTime);
+                    var jqlQuery = string.Format(UpdatedTicketsQuery, lastUpdateTime, lastUpdateTime.Substring(0, 10));
                     var updatedIssues = Jira.GetIssuesFromJql(jqlQuery).ToList();
+
+                    //Update Epics within FinalBuilds.
                     foreach(var issue in updatedIssues.Where(x => x.Type.Name == "Epic"))
                     {
-                        var ticketToUpdate = FinalBuilds.Where(x => x.ParentTicket.Key == issue.Key.ToString()).Select(x => x.ParentTicket).FirstOrDefault();
-                        if(ticketToUpdate != null)
+                        var newFinalBuilds = new List<ConnectorBuildItem>();
+                        var newEpic = new ParentTicket(issue);
+                        bool update = false;
+                        foreach (var build in FinalBuilds)
                         {
-                            ticketToUpdate = new ParentTicket(issue);
+                            if (build.ParentTicket.Key == newEpic.Key)
+                            {
+                                newEpic.Stories = build.ParentTicket.Stories;
+                                build.ParentTicket = newEpic;//Set parent to updated version.
+                                update = true;
+                            }
+                            
+                            newFinalBuilds.Add(build);
                         }
-                        else
+                        if(!update) //Insert new CBI
                         {
-                            AllParents.Add(new ParentTicket(issue));
+                            newFinalBuilds.Add(new ConnectorBuildItem(newEpic));
                         }
+
+                        FinalBuilds = newFinalBuilds; //Set Final Builds
                     }
 
+                    //Update Stories
                     foreach (var issue in updatedIssues.Where(x => x.Type.Name == "Story"))
                     {
-                        ChildTicket ticketToUpdate = null;
-                        var epicLink = issue["Epic Link"].ToString();
-                        var stagesForThisEpic = FinalBuilds.Where(x => x.ParentTicket.Key == epicLink).Select(x => x.StageColors.Values).FirstOrDefault();
-                        if (stagesForThisEpic != null)
-                            ticketToUpdate = stagesForThisEpic.Where(x => x.Key == issue.Key.ToString()).FirstOrDefault();
+                        var newStory = new ChildTicket(issue, true);
+                        bool update = false;
 
-                        if (ticketToUpdate != null)
-                        {
-                            ticketToUpdate = new ChildTicket(issue);
-                        }
+                        for (int i = 0; i < FinalBuilds.Count; i ++)
+                            if(FinalBuilds[i].ParentTicket.Key == newStory.EpicLink)
+                            {
+                                for( int j = 0; j < FinalBuilds[i].ParentTicket.Stories.Count; j++)
+                                    if(FinalBuilds[i].ParentTicket.Stories[j].Key == newStory.Key)
+                                    {
+                                        FinalBuilds[i].ParentTicket.Stories[j] = newStory;
+                                        update = true;
+                                    }
+
+                                if(!update)
+                                    FinalBuilds[i].ParentTicket.Stories.Add(newStory);
+                            }
                     }
 
+                    //Update story sub-tickets
                     foreach (var issue in updatedIssues.Where(x => x.Type.IsSubTask))
                     {
-                        ChildTicket ticketToUpdate = null;
-                        var epicLink = issue["Epic Link"].ToString();
-                        var stagesForThisEpic = FinalBuilds.Where(x => x.ParentTicket.Key == epicLink).Select(x => x.StageColors.Values).FirstOrDefault();
-                        if (stagesForThisEpic != null)
-                            ticketToUpdate = stagesForThisEpic.Where(x => x.Key == issue.ParentIssueKey.ToString()).FirstOrDefault();
+                        var child = new ChildTicket(issue, true);
+                        var parent = AllChildren.Where(x => x.Key == issue.ParentIssueKey).FirstOrDefault();
+                        bool update = false;
+                        for(int i = 0; i < FinalBuilds.Count; i++)
+                            if(FinalBuilds[i].ParentTicket.Key == parent.EpicLink)
+                                for(int j = 0; j < FinalBuilds[i].ParentTicket.Stories.Count; j++)
+                                    if(FinalBuilds[i].ParentTicket.Stories[j].Key == parent.Key)
+                                    {
+                                        for (int k = 0; k < FinalBuilds[i].ParentTicket.Stories[j].SubTickets.Count; k++)
+                                            if(FinalBuilds[i].ParentTicket.Stories[j].SubTickets[k].Key == child.Key)
+                                            {
+                                                FinalBuilds[i].ParentTicket.Stories[j].SubTickets[k] = child;
+                                                update = true;
+                                            }
 
-                        if (ticketToUpdate != null)
-                        {
-                            var story = Jira.GetIssue(issue.ParentIssueKey);
-                            if(story != null)
-                                ticketToUpdate = new ChildTicket(story);
-                        }
+                                        if(!update)
+                                            FinalBuilds[i].ParentTicket.Stories[j].SubTickets.Add(child);
+                                    }
                     }
 
                 }
@@ -210,20 +281,15 @@ namespace ConnectorStatus.Controllers
             }
         }
 
-
-        async Task GetSubTickets()
+        private async Task GetStories()
         {
             if(Jira != null)
             {
-                Stopwatch sw = new Stopwatch();
-
-                sw.Start();
-
                 List<ParentTicket> epicKeys = AllParents.Where(p => p.Stories.Count() == 0).Select(p => p).ToList();
 
                 //Set up enumerable of tasks. Each returns a list of issues. 
-                IEnumerable<Task<IEnumerable<Issue>>> getStoriesQuery = from parent in epicKeys
-                                                                        select Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), 100, 0, System.Threading.CancellationToken.None);
+                IEnumerable<Task<List<ChildTicket>>> getStoriesQuery = from parent in epicKeys
+                                                                        select GetChildrenAndSubTicketsAsync(parent);//Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), 100, 0, System.Threading.CancellationToken.None);
                 
                 //ToList starts asynchronous calls for all tasks in enumerable. 
                 var getStoriesTasks = getStoriesQuery.ToList();
@@ -232,47 +298,99 @@ namespace ConnectorStatus.Controllers
                 while( getStoriesTasks.Count > 0 )
                 {
                     //Get Completed task and remove from list. 
-                    Task<IEnumerable<Issue>> finishedTask = await Task.WhenAny(getStoriesTasks);
+                    var finishedTask = await Task.WhenAny(getStoriesTasks);
                     getStoriesTasks.Remove(finishedTask);
 
                     try
                     {
                         var subtickets = await finishedTask;
                         LinkStoriesToBuild(subtickets);
+                        Debug.WriteLine(DateTime.Now + " : --- Start getting subtickets for: " + subtickets.FirstOrDefault().Summary);
+                        subtickets = await GetSubtickets(subtickets);
+                        Debug.WriteLine("\t\t Got subtickets for: " + subtickets.FirstOrDefault().Summary);
+
                     }
                     catch(Exception e)
                     {
                         FileWriter.Log("[ERROR] ---- " + e.Message);
                     }
-
                 }
-
-
-                sw.Stop();
-                Debug.WriteLine("Elapsed={0}",sw.Elapsed);
-
-
             }
-            
-
         }
 
-        private void LinkStoriesToBuild(IEnumerable<Issue> issues)
+
+        private async Task<List<ChildTicket>> GetChildrenAndSubTicketsAsync(ParentTicket parent)
+        {
+            var ticketList = new List<ChildTicket>();
+            var test = BuildStoryTicketJql(parent);
+            var stories = await Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), 100, 0, System.Threading.CancellationToken.None);
+
+            foreach (var story in stories)
+                ticketList.Add(new ChildTicket(story, ChildrenWithWorkLogged.Contains(story.Key.ToString())));
+
+            Debug.WriteLine(DateTime.Now + " : --- Got " + stories.Count() + " stories for: " + parent.Summary);
+
+            return ticketList;
+        }
+
+
+        private async Task<List<ChildTicket>> GetSubtickets(List<ChildTicket> stories)
+        {
+            var ticketList = new List<ChildTicket>();
+            if (Jira != null)
+            {
+
+                //Set up enumerable of tasks. Each returns a list of issues. 
+                IEnumerable<Task<IEnumerable<Issue>>> getStoriesQuery = from story in stories
+                                                                        select Jira.GetIssuesFromJqlAsync(BuildSubTicketJql(story), 100, 0, System.Threading.CancellationToken.None);
+
+                //ToList starts asynchronous calls for all tasks in enumerable. 
+                var getSubTasksTasks = getStoriesQuery.ToList();
+
+                //Wait for all to finish. Process each as they finish. 
+                while (getSubTasksTasks.Count > 0)
+                {
+                    //Get Completed task and remove from list. 
+                    Task<IEnumerable<Issue>> finishedTask = await Task.WhenAny(getSubTasksTasks);
+                    getSubTasksTasks.Remove(finishedTask);
+
+                    try
+                    {
+                        var subtickets = await finishedTask;
+                        
+                        var parentKey = subtickets.Select(x => x.ParentIssueKey).FirstOrDefault();
+                        var storyToAddTo = stories.Where(x => x.Key == parentKey).FirstOrDefault();
+                        if (storyToAddTo != null)
+                            foreach (var subticket in subtickets)
+                            {
+                                var subticketChild = new ChildTicket(subticket, true);//JQL Limits tickets to only those with work logs. 
+                                storyToAddTo.SubTickets.Add(subticketChild);
+                                storyToAddTo.WorkLogs.AddRange(subticketChild.WorkLogs);
+                            }
+
+                    }
+                    catch (Exception e)
+                    {
+                        FileWriter.Log("[ERROR] ---- " + e.Message);
+                    }
+                }
+            }
+            return ticketList;
+        }
+
+        private void LinkStoriesToBuild(List<ChildTicket> stories)
         {
             //Get key (epic link) from first entry in enumerable. All are identical based on JQL. 
-            var parentKey = issues.Select(i => i["Epic Link"]).FirstOrDefault().ToString();
+            var epicLink = stories.Select(i => i.EpicLink).FirstOrDefault().ToString();
 
             //Retrieve objects to update. 
-            var parent = AllParents.Where(p => p.Key == parentKey).Select(p => p).First();
-            var currentBuildItem = FinalBuilds.Where(p => p.ParentTicket.Key == parentKey).Select(p => p).First();
+            var parent = AllParents.Where(p => p.Key == epicLink).Select(p => p).First();
+            var currentBuildItem = FinalBuilds.Where(p => p.ParentTicket.Key == epicLink).Select(p => p).First();
 
-            foreach (var issue in issues)
-            {
-                ChildTicket thisChild = new ChildTicket(issue);
-                parent.Stories.Add(thisChild);
-                if (!currentBuildItem.StageColors.ContainsKey(thisChild.TicketStage))
-                    currentBuildItem.StageColors.Add(thisChild.TicketStage, thisChild);
-            }
+            foreach (var story in stories)
+                parent.Stories.Add(story);
+            
+            Debug.WriteLine(DateTime.Now + "--------------- " + FinalBuilds.Where(x => x.StageColors  != null && x.StageColors.Count > 0).Count() + " EPICS PROCESSED -----------");
         }
 
         private void SubmitCommentIfDifferent(string key, string comment)
@@ -303,6 +421,11 @@ namespace ConnectorStatus.Controllers
             return StoryJQLQueryBase + parentTicket.Key;
         }
 
-        
+        private string BuildSubTicketJql(ChildTicket childTicket)
+        {
+            return SubtaskJQLQueryBase + childTicket.Key;
+        }
+
+
     }
 }

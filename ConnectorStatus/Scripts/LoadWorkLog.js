@@ -1,4 +1,8 @@
-﻿var main = function() {
+﻿var bubbleData = [];
+
+var main = function () {
+
+    $('body').addClass('grey lighten-4');
 
     $('#no-data-warning').hide();
 
@@ -13,7 +17,7 @@
         }
     });
 
-    $('#start-date').val('1/1/2015');
+    $('#start-date').val('1/1/2016');
     $('#end-date').val(getTodaysDateString());
 
 
@@ -23,10 +27,14 @@
 
     $('#GetData').click();
 
-    
+    getEffortAndDurationData();
 };
 
+
 function getData(start, end) {
+    $('#chart1Spinner').show();
+    $('#chart1chart').hide();
+
     $.ajax({
         type: "POST",
         url: '/WorkLogs/GetClientStageData',
@@ -36,23 +44,35 @@ function getData(start, end) {
         success: function (data) {
             if (data) {
                 nv.addGraph(function () {
-                    var chart = nv.models.multiBarHorizontalChart()
+                    var chart = nv.models.multiBarChart()
                         .x(function (d) { return d.stage })
                         .y(function (d) { return d.hours })
-                        .margin({ top: 30, right: 20, bottom: 50, left: 175 })
-                         .stacked(true)
+                        .margin({ top: 30, right: 40, bottom: 150, left: 60 })
+                        .stacked(true)
+                        .rotateLabels(45)
+                        .reduceXTicks(false)
+                        .width(650)
+                        .height(600)
                         //.tooltips(false)
-                        .showControls(true);
+                        .showControls(false);
+
+                    chart.tooltip(function (key, x, y, e, graph) {
+                        return '<p><strong>' + key + '</strong></p>' +
+                        '<p>' + y + ' in the month ' + x + '</p>';
+                    });
 
                     chart.yAxis
                         .tickFormat(d3.format(',.2f'));
 
-                    d3.select('#chart svg')
+                    d3.select('#chart1 svg')
                         .datum(data)
                       .transition().duration(15000)
                         .call(chart);
 
                     nv.utils.windowResize(chart.update);
+
+                    $('#chart1Spinner').hide();
+                    $('#chart1chart').show();
 
                     return chart;
                 })
@@ -62,6 +82,68 @@ function getData(start, end) {
             }
         }
     });
+}
+
+function getEffortAndDurationData() {
+    $('#chart2Spinner').show();
+    $('#chart2chart').hide();
+
+    $.ajax({
+        type: "POST",
+        url: '/WorkLogs/GetTicketEffortAndDuration',
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            bubbleData = data;
+            drawBubbles(data)
+        }
+    });
+}
+
+function filterByKeyWord(keyword) {
+    var newData = [];
+    for (var i = 0; i < bubbleData.length; i++) {
+        if (bubbleData[i].key.indexOf(keyword) > -1) {
+            newData.push(bubbleData[i]);
+        }  
+    }
+    drawBubbles(newData);
+}
+
+function drawBubbles(data) {
+    if (data) {
+        
+        nv.addGraph(function () {
+            var chart = nv.models.scatterChart()
+                    .showLegend(false)
+                    .showDistX(true)    //showDist, when true, will display those little distribution lines on the axis.
+                    .showDistY(true)
+                    .width(700)
+                    .height(600)
+                    .color(d3.scale.category10().range());
+
+            chart.yAxis
+                .tickFormat(d3.format(',.2f'))
+                .axisLabel('Duration (Days)');
+
+            chart.xAxis.axisLabel('Stage');
+
+            d3.select('#chart2 svg')
+                .datum(data)
+                .transition().duration(15000)
+                .call(chart);
+
+            nv.utils.windowResize(chart.update);
+
+            $('#chart2Spinner').hide();
+            $('#chart2chart').show();
+
+            return chart;
+        })
+    }
+    else {
+        $('#no-data-warning').show();
+    }
 }
 
 function getTodaysDateString() {

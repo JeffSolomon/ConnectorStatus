@@ -11,10 +11,28 @@ namespace ConnectorStatus.Models
         public ConnectorBuildItem(ParentTicket ticket)
         {
             ParentTicket = ticket;
-            StageColors = new Dictionary<string, ChildTicket>();
+            //StageColors = new Dictionary<string, ChildTicket>();
         }
         public ParentTicket ParentTicket { get; set; }
-        public Dictionary<string, ChildTicket> StageColors;
+        public Dictionary<string, ChildTicket> StageColors
+        {
+            get
+            {
+                var sc = new Dictionary<string, ChildTicket>();
+                foreach(var ticket in ParentTicket.Stories)
+                {
+                    if(!sc.ContainsKey(ticket.TicketStage))
+                        sc.Add(ticket.TicketStage, ticket);
+                }
+                return sc;
+            }
+            set
+            {
+                //StageColors = value;
+            }
+
+
+        }
         public string trClass
         {
             get
@@ -37,8 +55,15 @@ namespace ConnectorStatus.Models
                 List<int> scores = new List<int>();
                 foreach(var stage in BuildProcessConfig.Stages.Where(x => x.Key <= deliverToQAStage))
                 {
-                    int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
-                    scores.Add(stageScore);
+                    try
+                    {
+                        int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
+                        scores.Add(stageScore);
+                    } catch (Exception e)
+                    {
+                        System.Diagnostics.Debug.WriteLine(e.Message);
+                    }
+                    
                 }
 
                 var averageScore = scores.Average(x => x);

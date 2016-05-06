@@ -10,7 +10,7 @@ namespace ConnectorStatus.Models
     public class ChildTicket : JiraTicket
     {
         
-        public ChildTicket(Issue issue)
+        public ChildTicket(Issue issue, bool getWorkLogs)
         {
             Key = issue.Key.ToString();
             Assignee = issue.Assignee;
@@ -21,13 +21,28 @@ namespace ConnectorStatus.Models
             Source = GetCustomField(issue, "Data Source Name");
             ImplementationRound = GetCustomField(issue, "Implementation Round");
             Description = Status == "Open" || Status == "In Progress" || Status.StartsWith("On Hold") ? GetLatestCommentOrDescription(issue, false) : "";
-            WorkLogs = GetWorklogs(issue);
+            if (getWorkLogs)
+                WorkLogs = GetWorklogs(issue);
+            else
+                WorkLogs = new List<EffortLog>();
+
+            SubTickets = new List<ChildTicket>();
+            EpicLink = GetCustomField(issue, "Epic Link");
+            
         }
 
-        public ChildTicket() { }
+        public ChildTicket()
+        {
+            SubTickets = new List<ChildTicket>();
+            WorkLogs = new List<EffortLog>();
+        }
 
         public string TicketStage { get; set; }
 
+        public string EpicLink { get; set; }
+
+        public List<ChildTicket> SubTickets { get; set; }
+        
         public int StageScore
         {
             get

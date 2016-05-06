@@ -118,5 +118,28 @@ th.rotate > div > span {
 
 .nvd3Chart svg {
         height: 500px;
-        width: 1000px;
+        width: 700px;
 }
+
+.card {
+  height:750px;
+  width:750px;
+
+}
+
+.chartContainer {
+    height:750px;
+    width: 750px;
+}
+
+.nvd3Chart .card-action {
+    background-color: lightblue
+}
+
+/*.nvtooltip {
+    background-color: #eeeeee;
+    line-height: 1.4;
+    color:black;
+    border-radius: 4px;
+    border-color:black;
+}*/

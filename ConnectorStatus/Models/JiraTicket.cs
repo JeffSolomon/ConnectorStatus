@@ -89,10 +89,22 @@ namespace ConnectorStatus.Models
 
             if(WorkLogs != null && WorkLogs.Count > 0)
             {
-                return WorkLogs.Where(l => (l.StartDate >= start && l.StartDate <= end) || l.StartDate == null).Select(l => l.Hours).Sum();
+                var wl = WorkLogs.Where(l => (l.StartDate >= start && l.StartDate <= end) || l.StartDate == null).Select(l => l.Hours).Sum();
+                return wl;
             }
             return 0;
             
+        }
+
+        public double GetPseudoDuration()
+        {
+            if (WorkLogs != null && WorkLogs.Count > 0)
+            {
+                var maxDate = (DateTime)WorkLogs.Select(x => x.StartDate).Max();
+                var minDate = (DateTime)WorkLogs.Select(x => x.StartDate).Min();
+                return (maxDate - minDate).TotalDays;
+            }
+            return 0;
         }
 
         public List<EffortLog> GetWorklogs(Issue issue)
@@ -108,7 +120,8 @@ namespace ConnectorStatus.Models
                 {
                     StartDate = wl.StartDate,
                     TimeSpent = wl.TimeSpent,
-                    Hours = wl.TimeSpentInSeconds / 3600.0
+                    Hours = wl.TimeSpentInSeconds / 3600.0,
+                    User = wl.Author
 
                 });
             }
@@ -120,6 +133,7 @@ namespace ConnectorStatus.Models
             public DateTime? StartDate { get; set; }
             public string TimeSpent { get; set;  }
             public double Hours { get; set;  }
+            public string User { get; set; }
         }
 
 
