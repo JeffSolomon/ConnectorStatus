@@ -87,6 +87,7 @@ namespace ConnectorStatus.Controllers
                             GetAndApplyUpdates();
                         }
                         FileWriter.WriteLastUpdateTime(currentDateTime);
+                        FileWriter.WriteJsonFile(FinalBuilds);
                     }
                     
                 }
@@ -98,7 +99,6 @@ namespace ConnectorStatus.Controllers
 
 
             //Session["builds"] = FinalBuilds;
-            FileWriter.WriteJsonFile(FinalBuilds);
 
             DisplayBuilds = FinalBuilds
                             .Where(p => p.ParentTicket.Stories != null && 
