@@ -110,11 +110,11 @@ namespace ConnectorStatus.Controllers
                 }
 
 
-                var tickets = allChildren.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = BuildProcessConfig.Stages.Where(y => y.Value == x.TicketStage).Select(z => z.Key).FirstOrDefault()})
+                var tickets = allChildren.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = BuildProcessConfig.Stages.Where(y => y.Value == x.TicketStage).Select(z => z.Key).FirstOrDefault(), StageLabel = x.TicketStage})
                                          .Where(x => x.Duration > 0)
                                          .ToList();
 
-                var parentTickets = allParents.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = 0 })
+                var parentTickets = allParents.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = 0, StageLabel = "Parent" })
                                                 .Where(x => x.Duration > 0)
                                                 .ToList();
                 tickets.AddRange(parentTickets);
@@ -126,7 +126,7 @@ namespace ConnectorStatus.Controllers
                     if (exists == null)
                         groups.Add(new BubbleGroup { key = ticket.Key, values = new List<BubbleData>() });
                     else
-                        exists.values.Add(new BubbleData { x = ticket.Stage, y = ticket.Duration, size = ticket.Effort });
+                        exists.values.Add(new BubbleData { StageNumber = ticket.Stage, Duration = ticket.Duration, Effort = ticket.Effort, StageLabel = ticket.StageLabel });
                 }
 
                 var workLogJson = Json(groups);
@@ -156,9 +156,10 @@ namespace ConnectorStatus.Controllers
 
         class BubbleData
         {
-            public double x { get; set; }
-            public double y { get; set; }
-            public double size { get; set; }
+            public double StageNumber { get; set; }
+            public string StageLabel { get; set; }
+            public double Duration { get; set; }
+            public double Effort { get; set; }
         }
 
       

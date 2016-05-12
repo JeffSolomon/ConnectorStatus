@@ -36,7 +36,7 @@ namespace ConnectorStatus.Controllers
         private static string SubtaskJQLQueryBase = "project = AAI and type = Sub-task and worklogDate >= \"2016-01-01\" and parent = ";
 
         private static string UpdatedTicketsQuery = "project = AAI and type in(Epic, Story, Sub-task) and " + 
-                                                    "status != 190-Completed and \"Data Source Name\" is not EMPTY " +
+                                                    "\"Data Source Name\" is not EMPTY " +
                                                     "and \"Customer Name\" is not empty and ((updatedDate >= \"{0}\" and type in(Epic, Story)) " + 
                                                     "or worklogDate >= \"{1}\")";
 
@@ -60,11 +60,12 @@ namespace ConnectorStatus.Controllers
                 username = collection.Get("username");
                 Session["username"] = username;
                 password = collection.Get("password");
-                FileWriter.Log("Login by " + username);
+                FileWriter.Log("Attempted login by " + username);
                 if (!String.IsNullOrEmpty(password))
                 {
                     if(InitiateConnection(username, password))
                     {
+                        FileWriter.Log("Successful login by " + username);
                         Session["jira"] = Jira;
                         var fromFile = FileWriter.ReadJsonFile();
                         if(fromFile == null)
@@ -102,7 +103,8 @@ namespace ConnectorStatus.Controllers
 
             DisplayBuilds = FinalBuilds
                             .Where(p => p.ParentTicket.Stories != null && 
-                                        p.ParentTicket.Stories.Count > 0)
+                                        p.ParentTicket.Stories.Count > 0 &&
+                                        p.ParentTicket.Status != "190-Completed")
                             .OrderBy(x => x.ParentTicket.Source)
                             .OrderByDescending(x => x.ParentTicket.TotalScore)
                             .OrderBy(x => x.ParentTicket.Client).ToList();
@@ -201,32 +203,29 @@ namespace ConnectorStatus.Controllers
             {
                 try
                 {
+                    
                     var jqlQuery = string.Format(UpdatedTicketsQuery, lastUpdateTime, lastUpdateTime.Substring(0, 10));
                     var updatedIssues = Jira.GetIssuesFromJql(jqlQuery).ToList();
-
+                    FileWriter.Log("Got " + updatedIssues.Count + " tickets updated since " + lastUpdateTime);
                     //Update Epics within FinalBuilds.
-                    foreach(var issue in updatedIssues.Where(x => x.Type.Name == "Epic"))
+                    foreach (var issue in updatedIssues.Where(x => x.Type.Name == "Epic"))
                     {
-                        var newFinalBuilds = new List<ConnectorBuildItem>();
                         var newEpic = new ParentTicket(issue);
                         bool update = false;
-                        foreach (var build in FinalBuilds)
+                        for (int i = 0; i < FinalBuilds.Count; i++)
                         {
-                            if (build.ParentTicket.Key == newEpic.Key)
+                            if(FinalBuilds[i].ParentTicket.Key == newEpic.Key)
                             {
-                                newEpic.Stories = build.ParentTicket.Stories;
-                                build.ParentTicket = newEpic;//Set parent to updated version.
+                                newEpic.Stories = FinalBuilds[i].ParentTicket.Stories;
+                                FinalBuilds[i].ParentTicket = newEpic;
                                 update = true;
                             }
-                            
-                            newFinalBuilds.Add(build);
-                        }
-                        if(!update) //Insert new CBI
-                        {
-                            newFinalBuilds.Add(new ConnectorBuildItem(newEpic));
                         }
 
-                        FinalBuilds = newFinalBuilds; //Set Final Builds
+                        if (!update) //Insert new CBI
+                        {
+                            FinalBuilds.Add(new ConnectorBuildItem(newEpic));
+                        }
                     }
 
                     //Update Stories
@@ -313,6 +312,7 @@ namespace ConnectorStatus.Controllers
                     catch(Exception e)
                     {
                         FileWriter.Log("[ERROR] ---- " + e.Message);
+                        FileWriter.Log("[ERROR] ---- " + e.StackTrace);
                     }
                 }
             }
