@@ -75,6 +75,9 @@ function getData(start, end) {
             else {
                 $('#no-data-warning').show();
             }
+        },
+        error: function () {
+            window.location.href = '/';
         }
     });
 }

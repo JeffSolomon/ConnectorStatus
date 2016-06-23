@@ -95,9 +95,10 @@ namespace ConnectorStatus.Controllers
             }
             //else if (Session["builds"] != null)
             //    FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;            
-            else if ((bool)Session["SuccessfulLogin"] && FileWriter.ReadJsonFile() != null)
+            else if (Session["SuccessfulLogin"] != null && (bool)Session["SuccessfulLogin"] && FileWriter.ReadJsonFile() != null)
                 FinalBuilds = FileWriter.ReadJsonFile();
-
+            else
+                return RedirectToAction("Index", "Home", false);
 
             //Session["builds"] = FinalBuilds;
 
@@ -396,10 +397,11 @@ namespace ConnectorStatus.Controllers
         private void SubmitCommentIfDifferent(string key, string comment)
         {
             Jira = Session["jira"] as Jira;
-            if(Jira != null)
+            List<ConnectorBuildItem> builds;
+            if (Jira != null && Session["SuccessfulLogin"] != null && (bool)Session["SuccessfulLogin"] && (builds = FileWriter.ReadJsonFile()) != null)
             {
                 var issue = Jira.GetIssue(key);
-                FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;
+                FinalBuilds = builds;
                 var issueInCache = FinalBuilds.Where(x => x.ParentTicket.Key == key).Select(x => x).FirstOrDefault();
                 if(issueInCache!=null && (issueInCache.ParentTicket.Description == null ? "" : Regex.Replace(issueInCache.ParentTicket.Description, @"\s+", "")) != Regex.Replace(comment, @"\s+", ""))
                 {
@@ -410,7 +412,7 @@ namespace ConnectorStatus.Controllers
                         FinalBuilds.Remove(issueInCache);
                         issueInCache.ParentTicket.Description = comment;
                         FinalBuilds.Add(issueInCache);
-                        Session["builds"] = FinalBuilds;
+                        FileWriter.WriteJsonFile(FinalBuilds);
                     }
                 }
             }

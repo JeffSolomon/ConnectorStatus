@@ -132,8 +132,8 @@ namespace ConnectorStatus.Controllers
                 var workLogJson = Json(groups);
                 return workLogJson;
             }
-
-            return Json("");
+            else
+                return RedirectToAction("Index", "Home", false);
         }
 
         class LogGroup
