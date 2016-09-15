@@ -1,15 +1,21 @@
 ﻿
 
 body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+    /*padding-top: 50px;*/
+    padding-bottom: 50px;
+    font-family: "Maven Pro"
 }
 
+
+.footer {
+    margin-top: 100px;
+}
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
     padding-left: 10px;
-    padding-right: 15px;
+    padding-right: 10px;
+    width: 100%;
 }
 
 /* Override the default bootstrap behavior where horizontal description lists 
@@ -19,7 +25,9 @@ body {
     white-space: normal;
 }
 
-
+.login{
+    width:500px;
+}
 
 /* Set width on the form input elements since they're 100% wide by default */
 input,
@@ -30,8 +38,10 @@ textarea {
 
 th.rotate {
   /* Something you can count on */
-  height: 110px;
+  max-height: 110px;
   white-space: nowrap;
+  padding-bottom: 10px;
+  padding-top:90px;
 }
 
 th.rotate > div {
@@ -46,17 +56,9 @@ th.rotate > div > span {
   padding: 5px 1px;
 }
 
-.spinner {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    margin-left: -50px; /* half width of the spinner gif */
-    margin-top: -50px; /* half height of the spinner gif */
-    text-align:center;
-    z-index:1234;
-    overflow: auto;
-    width: 200px; /* width of the spinner gif */
-    height: 2014px; /*hight of the spinner gif +2px to fix IE8 issue */
+th.bottom-align {
+    vertical-align:bottom;
+    text-align:left;
 }
 
 .form-inline {
@@ -66,65 +68,90 @@ th.rotate > div > span {
     margin:0px 0px !important;
 }
 
-.tooltip {
+.status-bubble {
+    border: black 1.5px solid;
+    opacity:0.7;
+    fill:white;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.backlog{
+    background:white;
+}
+
+.in-progress {
+    fill:rgba(123,193,67,1);
+    background:rgba(123,193,67,1);
+}
+
+.open{
+    fill:rgba(123,193,67,.4);
+    background:rgba(123,193,67,.4);
+}
+
+.closed{
+    fill:rgba(27,117,188,1);
+    background:rgba(27,117,188,1);
+}
+
+.complete{
+    fill:rgba(27,117,188,.4);
+    background:rgba(27,117,188,.4);
+}
+
+.on-hold-internal{
+    fill:rgba(228,65,69,.8);
+    background:rgba(228,65,69,.8);
+}
+
+.on-hold-external{
+    fill:rgba(228,65,69,1);
+    background:rgba(228,65,69,1);
+}
+
+
+.backdrop{
+  background-color: #ddd;
   position: absolute;
   z-index: 1030;
   display: block;
-
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1.4;
   opacity: 0;
   filter: alpha(opacity=0);
   visibility: visible;
+  color:black !important;
+  max-width: 200px !important;
+  padding-bottom: 30px !important;
 }
 
-.tooltip.right {
-  padding: 10px 5px;
-  margin-left: 3px;
+.material-tooltip{
+    color:black !important;
+    max-width: 200px !important;
 }
 
-.tooltip-inner {
-  max-width: 200px;
-  padding: 3px 8px;
-  color: #000000;
-  text-align: center;
-  text-decoration: none;
-  background-color: #ddd;
-  border-radius: 4px;
-  white-space: pre-wrap;      /* CSS3 */   
-   word-wrap: break-word;      /* IE */
-
-}
-
-.tooltip.right .tooltip-arrow {
-  top: 50%;
-  left: 0;
-  margin-top: -5px;
-  border-right-color: #ddd;
-  border-width: 5px 5px 5px 0;
-}
-
-.categoryheader {
-    border-right: 1px solid lightgray; 
-    border-left: 1px solid lightgray;
-}
 
 .phase-divider {
     border-right: 1px dotted #ddd;
 }
-
-
-
 
 .nvd3Chart svg {
         height: 500px;
         width: 700px;
 }
 
-.card {
+.static-size {
   height:750px;
   width:750px;
+}
 
+#connector-status {
+    padding-right: 50px;
+    padding-bottom: 50px;
+    padding-left: 50px;
+    width:95%;
 }
 
 .chartContainer {
@@ -136,10 +163,61 @@ th.rotate > div > span {
     background-color: lightblue
 }
 
-/*.nvtooltip {
-    background-color: #eeeeee;
-    line-height: 1.4;
+td.no-paddingz {
+    padding: 2px;
+    font-size: 12px;
+}
+
+#filterModal {
+    height:80%;
+    width:80%;
+}
+
+.client-scrum-filter{
+    padding:10px;
+}
+
+.client-row{
+    margin-bottom:1px;
+}
+
+.left-border{
+    border-left: 1px solid lightgray;
+}
+
+.centered-spinner {
+    position: absolute;
+    left: 50%;
+    bottom: 0px;
+    width: 100%;
+    margin: 15px;
+}
+
+.ticket-comment {
+    min-width: 150px;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border:none;
+    margin:0px;
+    padding:0px;
     color:black;
-    border-radius: 4px;
-    border-color:black;
-}*/
+}
+
+#buildcount{
+    width: 200px;
+    text-align:center;
+    padding:5px;
+}
+
+#buildcount > span{
+    font-weight:bold;
+}
+
+.dstype{
+    width:100px;
+    max-width:100px;
+    white-space:nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

@@ -16,7 +16,7 @@ namespace ConnectorStatus.Models
         public ParentTicket(Issue issue)
         {
             Stories = new List<ChildTicket>();
-
+            
             Key = issue.Key.ToString();
             Assignee = issue.Assignee;
             Status = issue.Status.Name.ToString();
@@ -28,10 +28,14 @@ namespace ConnectorStatus.Models
             ImplementationRound = GetCustomField(issue, "Implementation Round");
             ContractID = GetContractIDFromCascading(issue);
             WorkLogs = GetWorklogs(issue);
+            DataSourceType = GetCustomField(issue, "Data Source Type");
+            Updated = issue.Updated;
         } 
 
 
         public List<ChildTicket> Stories { get; set; }
+
+        public string DataSourceType { get; set; }
 
         public int TotalScore
         {

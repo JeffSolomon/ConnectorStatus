@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using Atlassian.Jira;
 using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ConnectorStatus.Models
 {
@@ -28,7 +30,8 @@ namespace ConnectorStatus.Models
 
             SubTickets = new List<ChildTicket>();
             EpicLink = GetCustomField(issue, "Epic Link");
-            
+            Updated = issue.Updated;
+
         }
 
         public ChildTicket()
@@ -73,10 +76,50 @@ namespace ConnectorStatus.Models
         {
             get
             {
-                return  TicketStage +
-                    "<br><strong>" +
-                    Status + "</strong>" +
-                    (!string.IsNullOrEmpty(Description) ? "<br><br><p style='text-align:left'><strong>Last Comment:</strong><br><i>" + WebUtility.HtmlEncode(Description) + "</i></p>": "");
+                var baseString = "{0}"; //Ticket Stage
+                baseString += "<br><b>{1}</b><br><br>"; //Status
+                baseString += @"<table>
+                                    <tbody>
+                                    <tr>
+                                        <td style='padding:2px;'><b>Start Date</b></td>
+                                        <td style='padding:2px;'>{2}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style='padding:2px;'><b>Last Update</b></td>
+                                        <td style='padding:2px;'>{3}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style='padding:2px;'><b>Hours</b></td>
+                                        <td style='padding:2px;'>{4}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                {5}";
+
+
+                string final = "";
+                try
+                {
+                    final = string.Format(baseString,
+                                                            TicketStage,
+                                                            Status,
+                                                            (FirstLogDate == null ? "--" : ((DateTime)FirstLogDate).ToString("MM/dd/yyyy")),
+                                                            (TrueLastUpdate == null ? "--" : ((DateTime)TrueLastUpdate).ToString("MM/dd/yyyy")),
+                                                            TotalHours.ToString("F"),
+                                                            (!string.IsNullOrEmpty(Description) ? "<p style='text-align:left'><b>Last Comment:</b><br><i>" + WebUtility.HtmlEncode(ScrubComment(Description)) + "</i></p>" : "")
+                                                            );
+                } catch(Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
+                
+                return final;
+                //    return  TicketStage +
+            //        "<br><b>" +
+            //        Status + "</b>" +
+            //        "<p style='text-align:left'><b>Work Logs</b><br>" + TotalHours + " Hours <br>" + (FirstLogDate == null ? "?" : ((DateTime)FirstLogDate).ToString("MM/dd/yyyy"))+ " - " +
+            //        (MostRecentLogDate == null ? "?" : ((DateTime)MostRecentLogDate).ToString("MM/dd/yyyy")) + "</p>" +
+            //        (!string.IsNullOrEmpty(Description) ? "<br><p style='text-align:left'><strong>Last Comment:</strong><br><i>" + WebUtility.HtmlEncode(ScrubComment(Description)) + "</i></p>": "");
             }
         }
 
@@ -88,7 +131,7 @@ namespace ConnectorStatus.Models
             if (comments != null && comments.Count > 0)
             {
                 var fullComment = comments.OrderByDescending(c => c.CreatedDate).FirstOrDefault();
-                comment = fullComment.Body + "<br><br>" + fullComment.Author + " - " + (fullComment.CreatedDate != null ? ((DateTime)fullComment.CreatedDate).ToString("d") : "");
+                comment = fullComment.Body + "<br><br>" + ScrubJiraUsername(fullComment.Author) + " - " + (fullComment.CreatedDate != null ? ((DateTime)fullComment.CreatedDate).ToString("d") : "");
             }
             
             else if (fallBackToDescription)
@@ -96,5 +139,42 @@ namespace ConnectorStatus.Models
 
             return comment;
         }
+
+        private string UppercaseFirst(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            char[] a = s.ToCharArray();
+            a[0] = char.ToUpper(a[0]);
+            return new string(a);
+        }
+
+        private string ScrubComment(string comment)
+        {
+            Regex rgx = new Regex(@"\[~(.*?)\]");
+            var final = comment;
+            foreach(Match match in rgx.Matches(comment))
+            {
+                var value = match.Groups[1].Value;
+                final = final.Replace("[~" + value + "]", ScrubJiraUsername(value));
+            }
+            return final;
+        }
+
+        private string ScrubJiraUsername(string un)
+        {
+            var names = un.Split('.');
+            StringBuilder sb = new StringBuilder("<b>");
+            foreach (var name in names)
+            {
+                sb.Append(UppercaseFirst(name) + " ");
+            }
+            sb.Append("</b>");
+            return sb.ToString();
+        }
+
+        
     }
 }

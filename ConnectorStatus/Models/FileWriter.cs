@@ -59,6 +59,16 @@ namespace ConnectorStatus.Models
                 {
                     using (var sw = new StreamWriter(FilePath))
                     {
+                        var settings = new JsonSerializerSettings//Use this code to troubleshoot deserialization. 
+                        {
+                            Error = (sender, args) =>
+                            {
+                                if (System.Diagnostics.Debugger.IsAttached)
+                                {
+                                    System.Diagnostics.Debugger.Break();
+                                }
+                            }
+                        };
                         sw.Write(JsonConvert.SerializeObject(builds, Formatting.Indented));
                     }
                 }
@@ -85,7 +95,7 @@ namespace ConnectorStatus.Models
                     using (var sr = new StreamReader(FilePath))
                     {
                         var fileJson = sr.ReadToEnd();
-                        /*var settings = new JsonSerializerSettings//Use this code to troubleshoot deserialization. 
+                        var settings = new JsonSerializerSettings//Use this code to troubleshoot deserialization. 
                         {
                             Error = (sender, args) =>
                             {
@@ -94,7 +104,7 @@ namespace ConnectorStatus.Models
                                     System.Diagnostics.Debugger.Break();
                                 }
                             }
-                        };*/
+                        };
                         var test = JsonConvert.DeserializeObject<List<ConnectorBuildItem>>(fileJson);
                         return JsonConvert.DeserializeObject<List<ConnectorBuildItem>>(fileJson);
                     }

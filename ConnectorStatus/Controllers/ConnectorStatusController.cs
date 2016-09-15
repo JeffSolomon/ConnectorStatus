@@ -8,6 +8,7 @@ using Atlassian.Jira;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace ConnectorStatus.Controllers
 {
@@ -40,77 +41,106 @@ namespace ConnectorStatus.Controllers
                                                     "and \"Customer Name\" is not empty and ((updatedDate >= \"{0}\" and type in(Epic, Story)) " + 
                                                     "or worklogDate >= \"{1}\")";
 
-        private static int MaxIssueCount = 1000;
+        private static int MaxIssueCount = 100000;
         
         // GET: ConnectorStatus
         public async Task<ActionResult> Index(FormCollection collection)
         {
-            AllParents = new List<ParentTicket>();
-            AllChildren = new List<ChildTicket>();
-            ChildrenWithWorkLogged = new List<string>();
-            FinalBuilds = new List<ConnectorBuildItem>();
-            var DisplayBuilds = new List<ConnectorBuildItem>();
-
-            string username;
-            string password;
-            var currentDateTime = DateTime.Now;
-
+            string username = null;
+            string password = null;
             if (collection != null && collection.Count > 0)
             {
                 username = collection.Get("username");
                 Session["username"] = username;
                 password = collection.Get("password");
-                FileWriter.Log("Attempted login by " + username);
-                if (!String.IsNullOrEmpty(password))
-                {
-                    if(InitiateConnection(username, password))
-                    {
-                        FileWriter.Log("Successful login by " + username);
-                        Session["jira"] = Jira;
-                        var fromFile = FileWriter.ReadJsonFile();
-                        if(fromFile == null)
-                        {
-                            Debug.WriteLine(DateTime.Now + " : --- Start getting parents.");
-                            GetParents();
-                            Debug.WriteLine(DateTime.Now + " : --- Start getting tickets with worklogs.");
-                            GetTicketsWithWorkLogs();
-                            Debug.WriteLine(DateTime.Now + " : --- Start getting stories.");
-                            await GetStories();
-                        }
-                        else
-                        {
-                            FinalBuilds = fromFile;
-                            foreach (var build in FinalBuilds) //Reload lists.
-                            {
-                                AllChildren.AddRange(build.StageColors.Select(x => x.Value));
-                                AllParents.Add(build.ParentTicket);
-                            }
-                            GetAndApplyUpdates();
-                        }
-                        FileWriter.WriteLastUpdateTime(currentDateTime);
-                        FileWriter.WriteJsonFile(FinalBuilds);
-                    }
-                    
-                }
             }
-            //else if (Session["builds"] != null)
-            //    FinalBuilds = Session["builds"] as List<ConnectorBuildItem>;            
-            else if (Session["SuccessfulLogin"] != null && (bool)Session["SuccessfulLogin"] && FileWriter.ReadJsonFile() != null)
-                FinalBuilds = FileWriter.ReadJsonFile();
-            else
-                return RedirectToAction("Index", "Home", false);
 
-            //Session["builds"] = FinalBuilds;
+            var builds = await PopulateFinalBuilds(username, password);
 
-            DisplayBuilds = FinalBuilds
-                            .Where(p => p.ParentTicket.Stories != null && 
+            if(FinalBuilds != null && FinalBuilds.Count > 0)
+            {
+                var DisplayBuilds = new List<ConnectorBuildItem>();
+                DisplayBuilds = FinalBuilds
+                            .Where(p => p.ParentTicket.Stories != null &&
                                         p.ParentTicket.Stories.Count > 0 &&
                                         p.ParentTicket.Status != "190-Completed")
                             .OrderBy(x => x.ParentTicket.Source)
                             .OrderByDescending(x => x.ParentTicket.TotalScore)
                             .OrderBy(x => x.ParentTicket.Client).ToList();
+                return View(DisplayBuilds);
+            }
+            else
+                return RedirectToAction("Index", "Home", false);
+        }
 
-            return View(DisplayBuilds);
+        [HttpPost]
+        public async Task<string> GetBuilds(string username, string password)
+        {
+            var builds = await PopulateFinalBuilds(username, password);
+
+            if (builds != null && builds.Count > 0)
+            {
+                var DisplayBuilds = new List<ConnectorBuildItem>();
+                DisplayBuilds = builds
+                            .Where(p => p.ParentTicket.Stories != null &&
+                                        p.ParentTicket.Stories.Count > 0) //&&
+                                       // p.ParentTicket.Status != "190-Completed")
+                            .OrderBy(x => x.ParentTicket.Source)
+                            .OrderByDescending(x => x.ParentTicket.TotalScore)
+                            .OrderBy(x => x.ParentTicket.Client).ToList();
+                var json = JsonConvert.SerializeObject(DisplayBuilds);
+                return json;
+            }
+
+            else
+                return "";//RedirectToAction("Index", "Home", false);
+        }
+
+        private async Task<List<ConnectorBuildItem>> PopulateFinalBuilds(string username, string password)
+        {
+            
+            AllParents = new List<ParentTicket>();
+            AllChildren = new List<ChildTicket>();
+            ChildrenWithWorkLogged = new List<string>();
+            FinalBuilds = new List<ConnectorBuildItem>();
+
+            var currentDateTime = DateTime.Now;
+            
+            FileWriter.Log("Attempted login by " + (username == "reload" ? Session["user"] : username));
+            if (!String.IsNullOrEmpty(password))
+            {
+                if (InitiateConnection(username, password))
+                {
+                    FileWriter.Log("Successful login by " + Session["user"]);
+                    var fromFile = FileWriter.ReadJsonFile();
+                    if (fromFile == null)
+                    {
+                        Debug.WriteLine(DateTime.Now + " : --- Start getting parents.");
+                        GetParents();
+                        Debug.WriteLine(DateTime.Now + " : --- Start getting tickets with worklogs.");
+                        GetTicketsWithWorkLogs();
+                        Debug.WriteLine(DateTime.Now + " : --- Start getting stories.");
+                        await GetStories();
+                    }
+                    else
+                    {
+                        FinalBuilds = fromFile;
+                        foreach (var build in FinalBuilds) //Reload lists.
+                        {
+                            AllChildren.AddRange(build.StageColors.Select(x => x.Value));
+                            AllParents.Add(build.ParentTicket);
+                        }
+                        GetAndApplyUpdates();
+                    }
+                    FileWriter.WriteLastUpdateTime(currentDateTime);
+                    FileWriter.WriteJsonFile(FinalBuilds);
+                }
+
+            }
+            else if (Session["SuccessfulLogin"] != null && (bool)Session["SuccessfulLogin"] && FileWriter.ReadJsonFile() != null)
+                FinalBuilds = FileWriter.ReadJsonFile();
+
+            return FinalBuilds;
         }
 
         [HttpPost]
@@ -130,15 +160,34 @@ namespace ConnectorStatus.Controllers
             return RedirectToAction("Index", "ConnectorStatus",  false  );
         }
 
+        [HttpPost]
+        public string SubmitComment(string key, string comment)
+        {
+            if (key != null && comment != null)
+                if (SubmitCommentIfDifferent(key, comment))
+                    return "{\"status\": \"success\"}";
+
+            return "{\"status\": \"error\"}";
+        }
+
         private bool InitiateConnection(string userName, string password)
         {
             bool success = true;
             try
             {
-                Jira = Jira.CreateRestClient(BaseURL, userName, password);
-                Jira.MaxIssuesPerRequest = MaxIssueCount;
-                var testQueryResult = Jira.GetIssue("AAI-1");
-                success = testQueryResult != null;
+                if(userName == "reload" && Session["SuccessfulLogin"] != null && (bool)Session["SuccessfulLogin"])
+                {
+                    Jira = (Jira)Session["jira"];
+                }
+                else
+                {
+                    Jira = Jira.CreateRestClient(BaseURL, userName, password);
+                    Jira.MaxIssuesPerRequest = MaxIssueCount;
+                    var testQueryResult = Jira.GetIssue("AAI-1");
+                    success = testQueryResult != null;
+                    Session["jira"] = Jira;
+                    Session["user"] = userName;
+                }
             }
             catch (Exception e)
             {
@@ -394,7 +443,7 @@ namespace ConnectorStatus.Controllers
             Debug.WriteLine(DateTime.Now + "--------------- " + FinalBuilds.Where(x => x.StageColors  != null && x.StageColors.Count > 0).Count() + " EPICS PROCESSED -----------");
         }
 
-        private void SubmitCommentIfDifferent(string key, string comment)
+        private bool SubmitCommentIfDifferent(string key, string comment)
         {
             Jira = Session["jira"] as Jira;
             List<ConnectorBuildItem> builds;
@@ -413,9 +462,11 @@ namespace ConnectorStatus.Controllers
                         issueInCache.ParentTicket.Description = comment;
                         FinalBuilds.Add(issueInCache);
                         FileWriter.WriteJsonFile(FinalBuilds);
+                        return true;
                     }
                 }
             }
+            return false;
         }        
 
         private string BuildStoryTicketJql(ParentTicket parentTicket)

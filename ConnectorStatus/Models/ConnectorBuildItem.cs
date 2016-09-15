@@ -30,8 +30,6 @@ namespace ConnectorStatus.Models
             {
                 //StageColors = value;
             }
-
-
         }
         public string trClass
         {
@@ -46,6 +44,49 @@ namespace ConnectorStatus.Models
         }
 
         public int CompletenessScore{ get{ return StageColors.Values.Sum(x => x.StageScore); }}
+
+        public double TotalHours
+        {
+            get
+            {
+                var hoursFromStages = ParentTicket.Stories.Select(s => s.TotalHours).Sum();
+                return hoursFromStages + ParentTicket.TotalHours;
+            }
+        }
+
+        public DateTime? FirstLogDate
+        {
+            get
+            {
+                var fromStages = ParentTicket.Stories.Where(s => s.FirstLogDate != null).Select(s => s.FirstLogDate).Min();
+
+                if (fromStages != null)
+                {
+                    if (ParentTicket.FirstLogDate == null || fromStages < ParentTicket.FirstLogDate)
+                        return fromStages;
+                }
+
+                return ParentTicket.FirstLogDate;
+
+            }
+        }
+
+        public DateTime? MostRecentLogDate
+        {
+            get
+            {
+                var fromStages = ParentTicket.Stories.Where(s => s.MostRecentLogDate != null).Select(s => s.MostRecentLogDate).Max();
+
+                if (fromStages != null)
+                {
+                    if (ParentTicket.MostRecentLogDate == null || fromStages > ParentTicket.MostRecentLogDate)
+                        return fromStages;
+                }
+
+                return ParentTicket.MostRecentLogDate;
+
+            }
+        }
 
         public bool ConnectorBuildInProgress
         {
