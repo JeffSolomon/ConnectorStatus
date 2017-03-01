@@ -57,9 +57,57 @@ namespace ConnectorStatus.Models
                 }
                 return (int)BuildProcessConfig.StatusCode.BackLog;
             }
-        } 
+        }
+
+        new public double TotalHours
+        {
+            get
+            {
+                double totalHours = 0;
+                if (WorkLogs != null && WorkLogs.Count > 0)
+                {
+                    totalHours = WorkLogs.Select(l => l.Hours).Sum();
+                }
+                if (SubTickets != null && SubTickets.Count > 0) //Add in hours from sub-tickets. 
+                {
+                    double subTicketHours = 0;
+                    //foreach(var s in SubTickets)
+                    //{
+                    //    if(s.WorkLogs != null && s.WorkLogs.Count > 0)
+                    //    {
+                    //        subTicketHours += s.WorkLogs.Select(l => l.Hours).Sum();
+                    //    }
+                    //}
+                    totalHours += subTicketHours;
+                }
+                return totalHours;
+            }
+        }
+
+        new public double LogDuration
+        {
+            get
+            {
+                var allLogs = new List<EffortLog>();
+                if (WorkLogs != null && WorkLogs.Count > 0)
+                    allLogs.AddRange(WorkLogs);
                 
-        public string DisplayColor
+                if (SubTickets != null && SubTickets.Count > 0)
+                    foreach(var s in SubTickets)
+                       if (s.WorkLogs != null && s.WorkLogs.Count > 0)
+                            allLogs.AddRange(s.WorkLogs);
+                    
+                if(allLogs.Count > 0)
+                {
+                    var maxDate = (DateTime)allLogs.Select(x => x.StartDate).Max();
+                    var minDate = (DateTime)allLogs.Select(x => x.StartDate).Min();
+                    return (maxDate - minDate).TotalDays;
+                }
+                return 0;
+            }
+        }
+
+            public string DisplayColor
         {
             get
             {

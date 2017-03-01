@@ -22,7 +22,7 @@ namespace ConnectorStatus.Controllers
 
         private static string BaseURL = "https://jira.arcadiasolutions.com/";
 
-        private static string EpicJQLQuery = "project = AAI and type = Epic and status != 190-Completed " +
+        private static string EpicJQLQuery = "project = AAI and type = Epic " + // and status != 190-Completed
                                              "and \"Data Source Name\" is not EMPTY and \"Customer Name\"" +
                                              "is not empty and createdDate >= \"2016-02-03\"";
 
@@ -356,7 +356,11 @@ namespace ConnectorStatus.Controllers
                         LinkStoriesToBuild(subtickets);
                         Debug.WriteLine(DateTime.Now + " : --- Start getting subtickets for: " + subtickets.FirstOrDefault().Summary);
                         subtickets = await GetSubtickets(subtickets);
-                        Debug.WriteLine("\t\t Got subtickets for: " + subtickets.FirstOrDefault().Summary);
+                        if (subtickets.Count > 0)
+                            Debug.WriteLine("\t\t Got subtickets for: " + subtickets.FirstOrDefault().Summary);
+                        else
+                            Debug.WriteLine("No subtickets found");
+
 
                     }
                     catch(Exception e)
@@ -373,13 +377,37 @@ namespace ConnectorStatus.Controllers
         {
             var ticketList = new List<ChildTicket>();
             var test = BuildStoryTicketJql(parent);
-            var stories = await Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), 100, 0, System.Threading.CancellationToken.None);
+            var maxRetries = 10;
+            int retryCount = 0;
+            for (;;)
+            {            
+                try
+                {
+                    var stories = await Jira.GetIssuesFromJqlAsync(BuildStoryTicketJql(parent), 100, 0, System.Threading.CancellationToken.None);
 
-            foreach (var story in stories)
-                ticketList.Add(new ChildTicket(story, ChildrenWithWorkLogged.Contains(story.Key.ToString())));
+                    foreach (var story in stories)
+                        ticketList.Add(new ChildTicket(story, ChildrenWithWorkLogged.Contains(story.Key.ToString())));
 
-            Debug.WriteLine(DateTime.Now + " : --- Got " + stories.Count() + " stories for: " + parent.Summary);
+                    Debug.WriteLine(DateTime.Now + " : --- Got " + stories.Count() + " stories for: " + parent.Summary);
 
+                    if (retryCount > 0)
+                        Debug.WriteLine("*******Retry number {0} succeeded for {1}", retryCount, parent.Summary);
+
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+
+                    Debug.WriteLine("*******Initiate retry number {0} for {1}", retryCount, parent.Summary);
+
+                    retryCount++;
+                    if(retryCount >= maxRetries)
+                    {
+                        Debug.WriteLine("*******Above retry limit to get stories for {1}", retryCount, parent.Summary);
+                    }
+                }
+            }
             return ticketList;
         }
 

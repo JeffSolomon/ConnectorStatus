@@ -3,9 +3,13 @@
 body {
     /*padding-top: 50px;*/
     padding-bottom: 50px;
-    font-family: "Maven Pro"
+    font-family: "Maven Pro";
+    background-color:#f2f2f2;
 }
 
+.site-blue{
+    background-color:#1b4854;
+}
 
 .footer {
     margin-top: 100px;

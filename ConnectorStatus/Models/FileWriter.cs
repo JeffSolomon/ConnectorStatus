@@ -70,11 +70,12 @@ namespace ConnectorStatus.Models
                             }
                         };
                         sw.Write(JsonConvert.SerializeObject(builds, Formatting.Indented));
+
                     }
                 }
                 catch (Exception e)
                 {
-
+                    System.Diagnostics.Debug.WriteLine("****" + e.Message);
                 }
             }
         }

@@ -71,45 +71,56 @@ function ShowBuilds(data) {
     $('#connectorStatusTable > thead > tr > th > div > span').each(function () { stages.push($(this).text()); })
 
     var tableArray = [];
+    var maxHours = Math.max.apply(Math, data.map(function (o) { return o.TotalHours; }));
+    var maxDur = Math.max.apply(Math, data.map(function (o) { return o.TotalDuration; }));
 
     for (var i = 0, len = data.length; i < len; i++) {
         tableArray.push('<tr>');
 
         var thisRow = data[i];
 
+        
         tableArray.push(BuildTooltippedTd(thisRow.ParentTicket.Key, thisRow.ParentTicket.ImplementationRound, thisRow.ParentTicket.Client));
         tableArray.push(BuildTooltippedTd(thisRow.ParentTicket.Key, thisRow.ParentTicket.ImplementationRound, thisRow.ParentTicket.Source));
         tableArray.push('<td class="no-paddingz dstype">' + thisRow.ParentTicket.DataSourceType + '</td>');
-        tableArray.push('<td class="no-paddingz">' + FormatDate(thisRow.FirstLogDate) + '</td>');
+        
 
         for (var j = 0, lens = stages.length; j < lens; j++) {
             if (stages[j] !== "Hours") {
                 var ticket = thisRow.StageColors[stages[j]];
 
                 if (typeof (ticket) === "undefined") {
-                    Console.Log(ticket);
+                    console.log(ticket);
                 }
-                var status = ticket.Status;
-                if (thisRow.ParentTicket.Status === '190-Completed') {
-                    status = 'Closed';
-                    ticket.Status = status;
+                else
+                {
+                    var status = ticket.Status;
+                    if (thisRow.ParentTicket.Status === '190-Completed') {
+                        status = 'Closed';
+                        ticket.Status = status;
+                    }
+
+
+                    var content = '<div class="status-bubble ' + status.toLowerCase().split(' ').join('-') + '" />';
+
+                    tableArray.push(BuildTooltippedTd(ticket.Key, ticket.ToolTipLabel, content));
                 }
-                    
-
-                var content = '<div class="status-bubble ' + status.toLowerCase().split(' ').join('-') + '" />';
-
-                tableArray.push(BuildTooltippedTd(ticket.Key, ticket.ToolTipLabel, content));
+                
             }
         }
 
-        tableArray.push('<td class="no-paddingz" style="text-align:center;">' + FormatDecimal(thisRow.TotalHours) + '</td>');
-
+        
+        
+        tableArray.push('<td class="no-paddingz" style="text-align:center;margin-left:10px;background-color: rgba(123,193,67, ' + thisRow.TotalHours / maxHours + ');">' + FormatDecimal(thisRow.TotalHours) + '</td>');
+        tableArray.push('<td class="no-paddingz" style="text-align:center;background-color: rgba(123,193,67, ' + thisRow.TotalDuration / maxDur + ');">' + FormatDecimal(thisRow.TotalDuration) + '</td>');
+        tableArray.push('<td class="no-paddingz">' + FormatDate(thisRow.FirstLogDate) + '</td>');
+        tableArray.push('<td class="no-paddingz">' + FormatDate(thisRow.MostRecentLogDate) + '</td>');
         var comment = '<td class="no-paddingz">' +
                         '<a class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="' + thisRow.ParentTicket.Description + '">' +
                         '<div><input value="' + thisRow.ParentTicket.Description + '" id="' + thisRow.ParentTicket.Key +
                         '" type="text" class="ticket-comment" style="border:none;margin:0px;padding:0px;height:25px;"></div></a></td>'
 
-        tableArray.push(comment);
+        //tableArray.push(comment);
         tableArray.push('</tr>');
     }
     $('#connectorStatusTable').append('<tbody>' + tableArray.join('') + '</tbody>');
@@ -403,6 +414,7 @@ function ShowLoading(loading) {
     else {
         $('#pre-loader').hide();
         $('.btn-floating').show();
+        $('.btn-floating').css('background-color', '#1b4854')
     }
 }
 

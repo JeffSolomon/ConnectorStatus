@@ -64,7 +64,6 @@ namespace ConnectorStatus.Models
                 }
                 return 0;
             }
-
         }
 
         public DateTime? FirstLogDate

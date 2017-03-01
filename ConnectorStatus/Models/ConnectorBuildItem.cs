@@ -54,6 +54,22 @@ namespace ConnectorStatus.Models
             }
         }
 
+        public double TotalDuration
+        {
+            get
+            {
+                if(FirstLogDate != null && MostRecentLogDate != null)
+                {
+                    var maxDate = (DateTime)MostRecentLogDate;
+                    var minDate = (DateTime)FirstLogDate;
+                    return (maxDate - minDate).TotalDays;
+                }
+                return 0;
+                
+            }
+        }
+
+
         public DateTime? FirstLogDate
         {
             get
@@ -98,7 +114,8 @@ namespace ConnectorStatus.Models
                 {
                     try
                     {
-                        int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
+                        var s = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault();
+                        int stageScore = s != null ? s.StageScore : 0;
                         scores.Add(stageScore);
                     } catch (Exception e)
                     {
@@ -140,7 +157,8 @@ namespace ConnectorStatus.Models
 
                 foreach (var stage in BuildProcessConfig.Stages.Where(x => x.Key <= deliverToQAStage && x.Key >= ETLStage))
                 {
-                    int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
+                    var s = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault();
+                    int stageScore = s != null ? s.StageScore : 0;
                     if (stageScore == (int)BuildProcessConfig.StatusCode.Open || stageScore == (int)BuildProcessConfig.StatusCode.InProgress)
                         return true;
                 }

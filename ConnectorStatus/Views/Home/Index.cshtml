@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Connector Status";
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 <!-- Compiled and minified CSS -->
@@ -13,15 +13,15 @@
 
 
 <div class="fixed-action-btn" style="bottom: 45px; left: 24px; width:50px;">
-    <a class="btn-floating btn-large blue-grey">
+    <a class="btn-floating btn-large site-blue">
         <i class="large material-icons">menu</i>
     </a>
     <ul>
         <li><a id="refresh-builds"class="btn-floating waves-effect waves-light blue darken-1 tooltipped" data-position="right" data-delay="500" data-tooltip="Refresh"><i class="material-icons">loop</i></a></li>
         <li><a id="filter-trigger" class="btn-floating waves-effect waves-light green darken-2 modal-trigger tooltipped" href="#filterModal" data-position="right" data-delay="500" data-tooltip="Filters"><i class="material-icons">menu</i></a></li>
         <li><a class="btn-floating waves-effect waves-light yellow darken-3 tooltipped" data-position="right" data-delay="500" data-tooltip="Charts" href="/Worklogs"><i class="material-icons">insert_chart</i></a></li>
+        <li><a id="download" class="btn-floating waves-effect waves-light red darken-2 tooltipped" data-position="right" data-delay="500" data-tooltip="Download to CSV"><i class="material-icons">file_download</i></a></li>
         <li><a id="legend-trigger" class="btn-floating waves-effect waves-light blue-grey lighten-3 modal-trigger tooltipped" href="#legend" data-position="right" data-delay="500" data-tooltip="About"><i class="material-icons">info_outline</i></a></li>
-        <li><a id="download" class="btn-floating waves-effect waves-light red darken-1 tooltipped" data-position="right" data-delay="500" data-tooltip="Export as CSV"><i class="material-icons">file_download</i></a></li>
     </ul>
 </div>
 
@@ -168,13 +168,18 @@
             <tr>
                 <th colspan="2" class="bottom-align">Connector</th>
                 <th class="bottom-align">Type</th>
-                <th class="bottom-align">Start Date</th>
+
                 @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.Stages)
                 {
                     <th class="rotate"><div><span>@stage.Value</span></div></th>
                 }
 
                 <th class="rotate"><div><span>Hours</span></div></th>
+                <th class="rotate"><div><span>Duration</span></div></th>
+                <th class="bottom-align" style="text-align:center;">Started</th>
+                <th class="bottom-align" style="text-align:center;">Updated</th>
+
+                
 
             </tr>
         </thead>
