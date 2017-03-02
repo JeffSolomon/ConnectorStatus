@@ -1,32 +1,207 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Connector Status";
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
+<!-- Compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!-- Compiled and minified JavaScript -->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>-->
+<script src="~/Scripts/LoadBuilds.js"></script>
+<script src="~/Scripts/DownloadCSV.js"></script>
+<script src="~/Scripts/materialize.js"></script>
 
-<div class="jumbotron">
-    <h1 >CONNECTOR STATUS</h1>
-    <p class="lead">Enter your JIRA username and password to refresh the status sheet.</p>
+
+<div class="fixed-action-btn" style="bottom: 45px; left: 24px; width:50px;">
+    <a class="btn-floating btn-large site-blue">
+        <i class="large material-icons">menu</i>
+    </a>
+    <ul>
+        <li><a id="refresh-builds"class="btn-floating waves-effect waves-light blue darken-1 tooltipped" data-position="right" data-delay="500" data-tooltip="Refresh"><i class="material-icons">loop</i></a></li>
+        <li><a id="filter-trigger" class="btn-floating waves-effect waves-light green darken-2 modal-trigger tooltipped" href="#filterModal" data-position="right" data-delay="500" data-tooltip="Filters"><i class="material-icons">menu</i></a></li>
+        <li><a class="btn-floating waves-effect waves-light yellow darken-3 tooltipped" data-position="right" data-delay="500" data-tooltip="Charts" href="/Worklogs"><i class="material-icons">insert_chart</i></a></li>
+        <li><a id="download" class="btn-floating waves-effect waves-light red darken-2 tooltipped" data-position="right" data-delay="500" data-tooltip="Download to CSV"><i class="material-icons">file_download</i></a></li>
+        <li><a id="legend-trigger" class="btn-floating waves-effect waves-light blue-grey lighten-3 modal-trigger tooltipped" href="#legend" data-position="right" data-delay="500" data-tooltip="About"><i class="material-icons">info_outline</i></a></li>
+    </ul>
 </div>
 
-<div class="container" >
-@using (Html.BeginForm("Index", "ConnectorStatus", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal" }))
-{
+<div class="modal" id="legend" style="max-width:40%">
+    <div class="modal-content">
 
-        <div class="form-group">
-            <label class="col-sm-3 control-label">Username</label>
-            @Html.TextBox("username", "", new { @class = "form-control" }) 
+        <h5>OVERVIEW</h5>
+        <p>This dashboard shows the current status of all connector builds being tracked in Jira. It can be filtered by client, stage-status, and/or by using a quick-filter by opening the filter modal with the green button on the left.</p>
+        <p>
+            The color of each square corresponds to a ticket's status in Jira, e.g. Open, In Progress, or On Hold, per the legend below.
+            The tooltips give more details, including the most recent comment on the ticket. Click on a square to navigate directly to the ticket in Jira.
+        </p>
+        <h5>LEGEND</h5>
+        <div style="margin-left:10px;">
+            <div class="row" style="margin-bottom:2px;">
+                <div class="col s1 status-bubble backlog"></div>
+                <div class="col s4">Backlog</div>
+                <div class="col s1 status-bubble closed"></div>
+                <div class="col s4">Closed</div>
+            </div>
+            <div class="row" style="margin-bottom:2px;">
+                <div class="col s1 status-bubble open"></div>
+                <div class="col s4">Open</div>
+                <div class="col s1 status-bubble on-hold-internal"></div>
+                <div class="col s4">On Hold - Internal</div>
+            </div>
+            <div class="row" style="margin-bottom:2px;">
+                <div class="col s1 status-bubble in-progress"></div>
+                <div class="col s4">In Progress</div>
+                <div class="col s1 status-bubble on-hold-external"></div>
+                <div class="col s4">On Hold - External</div>
+            </div>
+            <div class="row" style="margin-bottom:2px;">
+                <div class="col s1 status-bubble complete"></div>
+                <div class="col s10">Complete</div>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="col-sm-3 control-label">Password</label>
-            @Html.Password("password", "", new { @class = "form-control" })    
-        </div>
-        <div class="form-group">
-            <div class="col-sm-offset-3 col-sm-4">
-                <input id ="loadTickets" class="btn btn-primary" type="submit" value="Log In"/>
-            </div>    
-        </div>
-        
-
-}
-
+    </div>
 </div>
+
+<div class="modal" id="login">
+    <div class="modal-content">
+        <h4>LOGIN</h4>
+        <h6><i>Use Jira username and password.</i></h6>
+        <form class="form-horizontal" id="loginform">
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Username</label>
+                @Html.TextBox("username", "", new { @class = "form-control" })
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Password</label>
+                @Html.Password("password", "", new { @class = "form-control" })
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-4">
+                    <button type="button" id="loadTickets" class="waves-effect waves-light btn blue-grey lighten-3">Log In</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal modal-fixed-footer" id="filterModal">
+    <div class="modal-content">
+        <ul class="collapsible" data-collapsible="accordion">
+            <li>
+                <div class="collapsible-header">CLIENT</div>
+                <div class="collapsible-body client-scrum-filter">
+                    <div class="row">
+                        <div class="col s4">
+                            <h5>GROUPS</h5>
+                            <div><input type="checkbox" id="select-all-clients" /><label for="select-all-clients">ALL</label></div>
+                            <div><input type="checkbox" class="cb-group" id="northeast" /><label for="northeast">NORTHEAST</label></div>
+                            <div><input type="checkbox" class="cb-group" id="northwest" /><label for="northwest">NORTHWEST</label></div>
+                            <div><input type="checkbox" class="cb-group" id="newyork" /><label for="newyork">NEW YORK</label></div>
+                            <div><input type="checkbox" class="cb-group" id="south" /><label for="south">SOUTH</label></div>
+                        </div>
+                        <div class="col s8 left-border" id="client-list">
+                            <h5>CLIENTS</h5>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="collapsible-header">QUICK FILTERS</div>
+                <div class="collapsible-body container">
+                    <a id="clear-quick-filters" class="waves-effect waves-teal"><i>CLEAR SELECTION</i></a>
+                    <div class="row">
+                        <form id="quick-filters">
+                        </form>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="collapsible-header">STATUS</div>
+                <div class="collapsible-body container" id="status-list">
+                    <table id="status-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <form>
+                                        <div>
+                                            <input name="group1" type="radio" id="AND" checked />
+                                            <label for="AND">AND</label>
+                                        </div>
+                                        <div>
+                                            <input name="group1" type="radio" id="OR" />
+                                            <label for="OR">OR</label>
+                                        </div>
+                                    </form>
+                                </th>
+                                <th class="bottom-align">
+                                    <div>ALL</div>
+                                    <div style="height:30px">
+                                        <input type="checkbox" id="cb-check-all" />
+                                        <label for="cb-check-all">
+                                        </label>
+                                    </div>
+                                </th>
+                                <th class="rotate"><div><span>Backlog</span></div></th>
+                                <th class="rotate"><div><span>Open</span></div></th>
+                                <th class="rotate"><div><span>In Progress</span></div></th>
+                                <th class="rotate"><div><span>On Hold-Internal</span></div></th>
+                                <th class="rotate"><div><span>On Hold-External</span></div></th>
+                                <th class="rotate"><div><span>Complete</span></div></th>
+                                <th class="rotate"><div><span>Closed</span></div></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="modal-footer">
+        <a id="do-filter" class="modal-action modal-close waves-effect waves-green btn-flat ">Apply Filters</a>
+    </div>
+</div>
+
+<div id="connector-status" class="card" style="width:100%">
+    <div id="buildcount" style="display:none">Showing <span id="number-active">5</span> of <span id="number-total">10</span> builds.</div>
+    <table class="table" id="connectorStatusTable">
+        <thead>
+            <tr>
+                <th colspan="2" class="bottom-align">Connector</th>
+                <th class="bottom-align">Type</th>
+
+                @foreach (var stage in ConnectorStatus.Models.BuildProcessConfig.Stages)
+                {
+                    <th class="rotate"><div><span>@stage.Value</span></div></th>
+                }
+
+                <th class="rotate"><div><span>Hours</span></div></th>
+                <th class="rotate"><div><span>Duration</span></div></th>
+                <th class="bottom-align" style="text-align:center;">Started</th>
+                <th class="bottom-align" style="text-align:center;">Updated</th>
+
+                
+
+            </tr>
+        </thead>
+    </table>
+    <div id="pre-loader" class="centered-spinner preloader-wrapper big active">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+</div>
+<style>
+    .backdrop {
+      background-color: #ddd;
+      max-width: 200px;
+      padding: 3px 8px;
+      color: black;
+      text-align: center;
+    }
+</style>

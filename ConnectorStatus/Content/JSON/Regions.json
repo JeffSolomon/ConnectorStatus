@@ -1,0 +1,9 @@
+{
+	"regions":
+	[
+		{"region":"northwest", 	"clients" : ["CCCN", "CHPW", "SLVTN", "GOBHI", "MODA"]},
+		{"region":"newyork", 	"clients" : ["AHP", "XCLS", "UHG", "STJ"]},
+		{"region":"northeast", 	"clients" : ["BIDCO", "BIDCOUI", "EBNHC", "ONP", "STW", "VCA", "WCHN", "AXBRO", "MEMS", "BVCHC"]},
+		{"region":"south", 		"clients" : ["ACP", "FHN", "LHCQF", "UCF", "CDCR","SNTRA","PHPSINAI","PHAI"]}
+	]
+}

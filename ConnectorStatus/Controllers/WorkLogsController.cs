@@ -110,11 +110,11 @@ namespace ConnectorStatus.Controllers
                 }
 
 
-                var tickets = allChildren.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = BuildProcessConfig.Stages.Where(y => y.Value == x.TicketStage).Select(z => z.Key).FirstOrDefault(), StageLabel = x.TicketStage})
+                var tickets = allChildren.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.LogDuration, Effort = x.GetHoursLogged(), Stage = BuildProcessConfig.Stages.Where(y => y.Value == x.TicketStage).Select(z => z.Key).FirstOrDefault(), StageLabel = x.TicketStage})
                                          .Where(x => x.Duration > 0)
                                          .ToList();
 
-                var parentTickets = allParents.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.GetPseudoDuration(), Effort = x.GetHoursLogged(), Stage = 0, StageLabel = "Parent" })
+                var parentTickets = allParents.Select(x => new { Key = x.Client + " - " + x.Source, Duration = x.LogDuration, Effort = x.GetHoursLogged(), Stage = 0, StageLabel = "Parent" })
                                                 .Where(x => x.Duration > 0)
                                                 .ToList();
                 tickets.AddRange(parentTickets);

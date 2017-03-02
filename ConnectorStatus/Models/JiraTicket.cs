@@ -19,6 +19,7 @@ namespace ConnectorStatus.Models
         public string Client { get; set; }
         public string Source { get; set; }
         public DateTime? DueDate { get; set; }
+        public DateTime? Updated { get; set; }
 
         public string ImplementationPhase { get; set; }
         public string ImplementationRound { get; set; }
@@ -26,6 +27,68 @@ namespace ConnectorStatus.Models
         public string ContractID { get; set; }
 
         public List<EffortLog> WorkLogs { get; set; }
+
+        public DateTime? TrueLastUpdate
+        {
+            get
+            {
+                List<DateTime?> bothDates = new List<DateTime?>();
+                bothDates.Add(Updated);
+                bothDates.Add(MostRecentLogDate);
+                return bothDates.Max(); 
+            }
+        }
+
+        public double TotalHours
+        {
+            get
+            {
+                if (WorkLogs != null && WorkLogs.Count > 0)
+                {
+                    var wl = WorkLogs.Select(l => l.Hours).Sum();
+                    return wl;
+                }
+                return 0;
+            }
+        }
+
+        public double LogDuration
+        {
+            get
+            {
+                if (WorkLogs != null && WorkLogs.Count > 0)
+                {
+                    var maxDate = (DateTime)WorkLogs.Select(x => x.StartDate).Max();
+                    var minDate = (DateTime)WorkLogs.Select(x => x.StartDate).Min();
+                    return (maxDate - minDate).TotalDays;
+                }
+                return 0;
+            }
+        }
+
+        public DateTime? FirstLogDate
+        {
+            get
+            {
+                if (WorkLogs != null && WorkLogs.Count > 0)
+                    return WorkLogs.Select(w => w.StartDate).Min();
+
+                return null;
+            }
+        }
+
+        public DateTime? MostRecentLogDate
+        {
+            get
+            {
+                if (WorkLogs != null && WorkLogs.Count > 0)
+                    return WorkLogs.Select(w => w.StartDate).Max();
+
+                return null;
+            }
+        }
+
+
 
         //Methods
         public string GetCustomField(Issue issue, string fieldName)
@@ -96,16 +159,7 @@ namespace ConnectorStatus.Models
             
         }
 
-        public double GetPseudoDuration()
-        {
-            if (WorkLogs != null && WorkLogs.Count > 0)
-            {
-                var maxDate = (DateTime)WorkLogs.Select(x => x.StartDate).Max();
-                var minDate = (DateTime)WorkLogs.Select(x => x.StartDate).Min();
-                return (maxDate - minDate).TotalDays;
-            }
-            return 0;
-        }
+        
 
         public List<EffortLog> GetWorklogs(Issue issue)
         {
@@ -127,6 +181,8 @@ namespace ConnectorStatus.Models
             }
             return workLogs;
         }
+
+        
 
         public class EffortLog
         {

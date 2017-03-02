@@ -1,7 +1,7 @@
 ﻿
 @{
     ViewBag.Title = "WorkLogs";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
  <!-- Compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
@@ -17,21 +17,29 @@
     <p><strong>Uh oh! </strong><br />This page is only available once you've logged in to Jira to refresh the tickets.</p>
 </div>
     <div id="chart1" class="nvd3Chart">
-        <div class="card">
+        <div class="card static-size">
             <div class="card-action">
                 <span class="card-title">Client-Stage Effort</span>
-                <form class="form-inline">
-                    <div class="form-group">
-                        <input id="start-date" type="text" class="form-control date-input" placeholder="Start Date">
+                <form>
+                    <div class="row">
+                        <div class="col s4">
+                            <input id="start-date" type="text" class="form-control date-input" placeholder="Start Date">
+                        </div>
+                        @*<div class="input-field col s4">
+                <input placeholder="Start Date" id="start-date" type="text" class="validate">
+                <label for="start-date">First Name</label>
+            </div>*@
+                        <div class="col s4">
+                            <input id="end-date" type="text" class="form-control date-input" placeholder="End Date">
+                        </div>
+                        <div class="col s3">
+                            <button type="button" id="GetData" class="waves-effect waves-light btn blue-grey lighten-3">Get Data!</button>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <input id="end-date" type="text" class="form-control date-input" placeholder="End Date">
-                    </div>
-                    <button type="button" id="GetData" class="waves-effect waves-light btn blue-grey lighten-3">Get Data!</button>
                 </form>
             </div>
             <div class="card-content">
-                <div id="chart1Spinner" class="preloader-wrapper big active">
+                <div id="chart1Spinner" class="centered-spinner preloader-wrapper big active">
                     <div class="valign-wrapper center-align" >
                         <div class="spinner-layer spinner-blue-only">
                             <div class="circle-clipper left">
@@ -53,12 +61,12 @@
 
 
 <div id="chart2" class="nvd3Chart">
-    <div class="card">
+    <div class="card static-size">
         <div class="card-action">
             <span class="card-title">Effort and Duration by Stage</span>
         </div>
         <div class="card-content">
-            <div id="chart2Spinner" class="preloader-wrapper big active">
+            <div id="chart2Spinner" class="centered-spinner preloader-wrapper big active">
                 <div class="valign-wrapper center-align">
                     <div class="spinner-layer spinner-blue-only">
                         <div class="circle-clipper left">
@@ -79,12 +87,12 @@
 </div>
 
 <div id="chart3" class="nvd3Chart">
-    <div class="card">
+    <div class="card static-size">
         <div class="card-action">
             <span class="card-title">Effort v Duration</span>
         </div>
         <div class="card-content">
-            <div id="chart3Spinner" class="preloader-wrapper big active">
+            <div id="chart3Spinner" class="centered-spinner preloader-wrapper big active">
                 <div class="valign-wrapper center-align">
                     <div class="spinner-layer spinner-blue-only">
                         <div class="circle-clipper left">

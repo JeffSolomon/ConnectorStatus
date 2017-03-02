@@ -4,11 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
-    @Styles.Render("~/Content/css")
+    <link href="/Content/site.css" rel="stylesheet" />
+
     @Scripts.Render("~/bundles/modernizr")
 
     @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
     <script src="~/Scripts/bindWithDelay.js"></script> 
     <script src="~/Scripts/jquery.filtertable.js"></script> 
     <script src="~/Scripts/ConnectorStatus.js"></script>
@@ -16,19 +16,15 @@
     <link id="Link2" rel="icon" href="~/favicon.ico" type="image/ico" /> 
 </head>
 <body>
-    <div id="spinner" class="spinner" style="display:none;">
-        <img id="img-spinner" src="~/Content/Images/ajax-loader.gif" alt="Loading" />
-    </div>
-    <div class="navbar navbar-inverse navbar-fixed-top"> 
-        <div class="container">
-            <a class="navbar-brand">
-                <img alt="Brand" src="../favicon.ico" style="max-height:30px;">
+    <div class="nav-wrapper site-blue"> 
+        <div>
+            <a class="brand-logo" href="/">
+                <img alt="Brand" src="../favicon.ico" style="max-height:30px;padding-left:100px;">
             </a>
         </div>
     </div>
-    <div class="container body-content">
+    <div class="container body-content" style="width:100%">
         @RenderBody()
-        <hr />
         <footer>
             <p>Arcadia Innovation Day</p>
         </footer>

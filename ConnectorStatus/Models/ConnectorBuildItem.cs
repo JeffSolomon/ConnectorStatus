@@ -30,8 +30,6 @@ namespace ConnectorStatus.Models
             {
                 //StageColors = value;
             }
-
-
         }
         public string trClass
         {
@@ -47,6 +45,65 @@ namespace ConnectorStatus.Models
 
         public int CompletenessScore{ get{ return StageColors.Values.Sum(x => x.StageScore); }}
 
+        public double TotalHours
+        {
+            get
+            {
+                var hoursFromStages = ParentTicket.Stories.Select(s => s.TotalHours).Sum();
+                return hoursFromStages + ParentTicket.TotalHours;
+            }
+        }
+
+        public double TotalDuration
+        {
+            get
+            {
+                if(FirstLogDate != null && MostRecentLogDate != null)
+                {
+                    var maxDate = (DateTime)MostRecentLogDate;
+                    var minDate = (DateTime)FirstLogDate;
+                    return (maxDate - minDate).TotalDays;
+                }
+                return 0;
+                
+            }
+        }
+
+
+        public DateTime? FirstLogDate
+        {
+            get
+            {
+                var fromStages = ParentTicket.Stories.Where(s => s.FirstLogDate != null).Select(s => s.FirstLogDate).Min();
+
+                if (fromStages != null)
+                {
+                    if (ParentTicket.FirstLogDate == null || fromStages < ParentTicket.FirstLogDate)
+                        return fromStages;
+                }
+
+                return ParentTicket.FirstLogDate;
+
+            }
+        }
+
+        public DateTime? MostRecentLogDate
+        {
+            get
+            {
+                var fromStages = ParentTicket.Stories.Where(s => s.MostRecentLogDate != null).Select(s => s.MostRecentLogDate).Max();
+
+                if (fromStages != null)
+                {
+                    if (ParentTicket.MostRecentLogDate == null || fromStages > ParentTicket.MostRecentLogDate)
+                        return fromStages;
+                }
+
+                return ParentTicket.MostRecentLogDate;
+
+            }
+        }
+
         public bool ConnectorBuildInProgress
         {
             get
@@ -57,7 +114,8 @@ namespace ConnectorStatus.Models
                 {
                     try
                     {
-                        int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
+                        var s = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault();
+                        int stageScore = s != null ? s.StageScore : 0;
                         scores.Add(stageScore);
                     } catch (Exception e)
                     {
@@ -99,7 +157,8 @@ namespace ConnectorStatus.Models
 
                 foreach (var stage in BuildProcessConfig.Stages.Where(x => x.Key <= deliverToQAStage && x.Key >= ETLStage))
                 {
-                    int stageScore = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault().StageScore;
+                    var s = StageColors.Where(x => x.Key == stage.Value).Select(x => x.Value).FirstOrDefault();
+                    int stageScore = s != null ? s.StageScore : 0;
                     if (stageScore == (int)BuildProcessConfig.StatusCode.Open || stageScore == (int)BuildProcessConfig.StatusCode.InProgress)
                         return true;
                 }

@@ -1,0 +1,150 @@
+{
+	"types":["Team In Progress", "Team Backlog"],
+	"filters": [
+		{
+			"name":"All Tickets",
+			"description": "All Tickets",
+			"type":"Other",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Kick off"				,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Client Access"		,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Requirements"			,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Environment Build"	,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Extract and Load"		,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Query Development"	,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Code Review"			,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Seed Data Prep"		,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Clinical Review"		,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"DQA"					,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Verification"			,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Deliver to QA"		,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"SIT Prep"				,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"SIT Execute"			,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"UAT Prep"				,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"UAT Execute"			,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Go-Live Approval"		,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]},
+				{"stage":"Go-Live"				,"statuses":["Backlog","Open","In Progress","On Hold-Internal","On Hold-External","Complete","Closed"]}
+			]
+		},
+		{
+			"name":"Connector Active Builds",
+			"description": "Any build with at least one ticket through Deliver to QA with status other than Backlog",
+			"type":"Team In Progress",
+			"andOr":"or",
+			"stageValues":[
+				{"stage":"Kick off"				,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Client Access"		,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Requirements"			,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Environment Build"	,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Extract and Load"		,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Query Development"	,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Code Review"			,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Seed Data Prep"		,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Clinical Review"		,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"DQA"					,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Verification"			,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]},
+				{"stage":"Deliver to QA"		,"statuses":["Open","In Progress","On Hold-Internal","On Hold-External"]}
+			]
+		},
+		{
+			"name":"Implementation Leads Backlog",
+			"description": "Kick off is in Backlog or Open",
+			"type":"Team Backlog",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Kick off"				,"statuses":["Backlog","Open"]}
+			]
+		},
+		{
+			"name":"Environment Build Backlog",
+			"description": "Environment Build is Backlog or Open and Kick Off is Complete or Closed",
+			"type":"Team Backlog",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Environment Build"	,"statuses":["Backlog","Open"]},
+				{"stage":"Kick off"				,"statuses":["Complete","Closed"]}
+			]
+		},
+		{
+			"name":"Client Access Backlog",
+			"description": "Client Access is Backlog or Open and Kick Off is Complete or Closed",
+			"type":"Team Backlog",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Client Access"		,"statuses":["Backlog","Open"]},
+				{"stage":"Kick off"				,"statuses":["Complete","Closed"]}
+			]
+		},
+		{
+			"name":"Connector Backlog",
+			"description": "Extract & Load is Backlog or Open and Kick Off and Client Access are either Complete or Closed",
+			"type":"Team Backlog",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Extract and Load"		,"statuses":["Backlog","Open"]},
+				{"stage":"Client Access"		,"statuses":["Complete","Closed"]},
+				{"stage":"Kick off"				,"statuses":["Complete","Closed"]}
+			]
+		},
+		{
+			"name":"QA Backlog",
+			"description": "SIT Prep is Backlog or Open and Kick Off and Client Access are either Complete or Closed",
+			"type":"Team Backlog",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"SIT Prep"				,"statuses":["Backlog","Open"]},
+				{"stage":"Client Access"		,"statuses":["Complete","Closed"]},
+				{"stage":"Kick off"				,"statuses":["Complete","Closed"]}
+			]
+		},
+		{
+			"name":"Client Access In Progress",
+			"description": "Client Access is In Progess",
+			"type":"Team In Progress",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Client Access"		,"statuses":["In Progress"]}
+			]
+		},
+		{
+			"name":"Environment Build In Progress",
+			"description": "Client Access is In Progess",
+			"type":"Team In Progress",
+			"andOr":"and",
+			"stageValues":[
+				{"stage":"Environment Build"		,"statuses":["In Progress"]}
+			]
+		},
+		{
+			"name":"Connector In Progress",
+			"description": "Any build where a ticket in Extract & Load through Deliver to QA is In Progess",
+			"type":"Team In Progress",
+			"andOr":"or",
+			"stageValues":[
+				{"stage":"Extract and Load"		,"statuses":["In Progress"]},
+				{"stage":"Query Development"	,"statuses":["In Progress"]},
+				{"stage":"Code Review"			,"statuses":["In Progress"]},
+				{"stage":"Seed Data Prep"		,"statuses":["In Progress"]},
+				{"stage":"Clinical Review"		,"statuses":["In Progress"]},
+				{"stage":"DQA"					,"statuses":["In Progress"]},
+				{"stage":"Verification"			,"statuses":["In Progress"]},
+				{"stage":"Deliver to QA"		,"statuses":["In Progress"]}
+			]
+		},
+		{
+			"name":"QA In Progress",
+			"description": "Any build where a ticket in SIT Prep through Go-Live is In Progess",
+			"type":"Team In Progress",
+			"andOr":"or",
+			"stageValues":[
+				{"stage":"SIT Prep"				,"statuses":["In Progress"]},
+				{"stage":"SIT Execute"			,"statuses":["In Progress"]},
+				{"stage":"UAT Prep"				,"statuses":["In Progress"]},
+				{"stage":"UAT Execute"			,"statuses":["In Progress"]},
+				{"stage":"Go-Live Approval" 	,"statuses":["In Progress"]},
+				{"stage":"Go-Live"				,"statuses":["In Progress"]}
+			]
+		}
+	]
+}

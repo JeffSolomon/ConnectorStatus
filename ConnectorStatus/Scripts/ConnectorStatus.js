@@ -56,14 +56,6 @@ function searchByMultiFilter(searchString, enableSelect) {
 
 var main = function () {
 
-    $('#loadTickets').click(function () {
-        
-        $(this).removeClass('btn-primary')
-        $(this).addClass('btn-info');
-        $(this).prop('value','Updating tickets...');
-        $('*').fadeTo(2, 0.9)
-        $('#spinner').show();
-    });
 
     $('#submitComments').click(function () {
 
