@@ -25,7 +25,7 @@ namespace ConnectorStatus.Models
             Source = GetCustomField(issue, "Data Source Name");
             Description = GetLatestCommentOrDescription(issue, true);
             DueDate = issue.DueDate;
-            ImplementationRound = GetCustomField(issue, "Implementation Round");
+            ImplementationRound = GetCustomFieldByID(issue, "11626");
             ContractID = GetContractIDFromCascading(issue);
             WorkLogs = GetWorklogs(issue);
             DataSourceType = GetCustomField(issue, "Data Source Type");
