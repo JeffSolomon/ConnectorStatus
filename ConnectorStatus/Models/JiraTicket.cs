@@ -94,7 +94,7 @@ namespace ConnectorStatus.Models
         public string GetCustomField(Issue issue, string fieldName)
         {
             var maybeNull = issue[fieldName];
-            return maybeNull != null ? maybeNull.ToString() : "";
+            return maybeNull != null ? maybeNull.ToString() : "Customfield " + fieldName + " null";
         }
 
         public string GetCustomFieldByID(Issue issue, string ID)
@@ -103,7 +103,11 @@ namespace ConnectorStatus.Models
             {
                 var customFieldID = "customfield_" + ID;
                 var maybeNull = issue.CustomFields.Where(c => c.Id == customFieldID);
-                return maybeNull != null ? maybeNull.FirstOrDefault().Values.FirstOrDefault().ToString() : "";
+                /*if (ID == "11626") {
+                    //System.Diagnostics.Debug.WriteLine(issue.Key + " maybeNull is null?: " + (maybeNull == null));
+                    System.Diagnostics.Debug.WriteLine(issue.Key + " maybeNull.FirstOrDefault().Values.FirstOrDefault().ToString(): " + maybeNull.FirstOrDefault().Values.FirstOrDefault().ToString());
+                }*/
+                return maybeNull != null ? maybeNull.FirstOrDefault().Values.FirstOrDefault().ToString() : "Customfield " + ID + " null";
             }
             catch (Exception e)
             {
